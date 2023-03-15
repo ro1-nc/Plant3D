@@ -31,7 +31,7 @@ namespace Project1.Support2D
         public double spaceY = 71075.0829;
 
         public double tempX = 101659.6570;
-        public double tempY = 71075.0829;
+        public double tempY = 71694.2039;
         public void ReadSupportData()
         {
             Document AcadDoc = null;
@@ -533,11 +533,12 @@ namespace Project1.Support2D
                 //adding blocks here
 
                 double boxlen = 17299.3016;
-                double tracex = 0;
+                double tracex = 619.1209;
                 double boxht = 12734.3388;
 
                 CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
 
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
                 CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
                 CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
                 CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
@@ -605,7 +606,7 @@ namespace Project1.Support2D
             if (tracex >= spaceX - boxlen)
             {
                 spaceY -= boxht;
-                tracex = 0;
+                tracex = tempX - 101659.6570 + 619.1209;
             }
             if (spaceY > boxht)
             {
@@ -613,6 +614,24 @@ namespace Project1.Support2D
                 
                 double centerX = tracex + boxlen / 2;  // 9869.9480;
                 double centerY = spaceY - upperYgap;
+                //box boundaries
+                //vertical line
+                Point3d pt1 = new Point3d(tracex+boxlen,spaceY + 619.1209, 0);
+                Point3d Pt2 = new Point3d(tracex + boxlen, spaceY-boxht + 619.1209, 0);
+                Line line = new Line(pt1, Pt2);
+                AcadBlockTableRecord.AppendEntity(line);
+                line.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
+                AcadTransaction.AddNewlyCreatedDBObject(line, true);
+
+                
+                //hori line
+                Point3d pt11 = new Point3d(tracex , spaceY-boxht + 619.1209, 0);
+                Point3d Pt21 = new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0);
+                Line line1 = new Line(pt11, Pt21);
+                AcadBlockTableRecord.AppendEntity(line1);
+                line1.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
+                AcadTransaction.AddNewlyCreatedDBObject(line1, true);
+
                 FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
                 FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
                 FixCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
@@ -1263,6 +1282,7 @@ namespace Project1.Support2D
             //AcadDatabase.Save();
 
             tr2.Commit();
+            db.Dispose();
             //// Read the DWG file into the database object
             //string dwgPath = "D:\\Projects\\Plant 3D\\Testmod.dwg";
             //db.ReadDwgFile(dwgPath, FileOpenMode.OpenForReadAndWriteNoShare, true, "");
@@ -1372,6 +1392,7 @@ namespace Project1.Support2D
 
             db.WblockCloneObjects(sourceIds, destDbMsId, mapping, DuplicateRecordCloning.Replace, false);
             tr2.Commit();
+            db.Dispose();
 
         }
         void CreateSingleLeadrwidtxt(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase)
