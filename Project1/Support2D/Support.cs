@@ -493,7 +493,7 @@ namespace Project1.Support2D
                 //CreatePrimarySupport(SecondSupport, add, AcadBlockTableRecord, AcadTransaction, AcadDatabase);
                 CreatePrimarySupportwithvertex(SecondSupport, add, AcadBlockTableRecord, AcadTransaction, AcadDatabase, prmsupport1);
 
-                CreateLeaderfromfile(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
+                //CreateLeaderfromfile(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
 
                 CreateSingleLeadrwidtxt(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
 
@@ -524,7 +524,9 @@ namespace Project1.Support2D
                 SupportData firstSupport = ListCentalSuppoData.FirstOrDefault();
 
                 // gets the template
-                GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,0);
+                CopyPasteTemplateFile("Temp1", Document2D, 0);
+
+                //GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,0);
 
                 //logic for adding block
 
@@ -536,38 +538,37 @@ namespace Project1.Support2D
                 double tracex = 619.1209;
                 double boxht = 12734.3388;
 
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
+                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.S_Type);
 
                 List<SupporSpecData> PrimarySupport = firstSupport.ListPrimarySuppo;
                 SupporSpecData prmsupport = PrimarySupport.FirstOrDefault();
@@ -590,63 +591,13 @@ namespace Project1.Support2D
                 //CreatePrimarySupport(SecondSupport, add, AcadBlockTableRecord, AcadTransaction, AcadDatabase);
                 CreatePrimarySupportwithvertex(SecondSupport, add, AcadBlockTableRecord, AcadTransaction, AcadDatabase, prmsupport1);
 
-                CreateLeaderfromfile(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
+                //CreateLeaderfromfile(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
 
 
                 CreateSingleLeadrwidtxt(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
 
                 //SupporSpecData Sesupport = SecondSupport.FirstOrDefault();
                 AcadTransaction.Commit();
-            }
-        }
-
-        [Obsolete]
-        public void CreateFullBlock(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY)
-        {
-            if (tracex >= spaceX - boxlen)
-            {
-                spaceY -= boxht;
-                tracex = tempX - 101659.6570 + 619.1209;
-            }
-            if (spaceY > boxht)
-            {
-                double upperYgap = 3500;
-                
-                double centerX = tracex + boxlen / 2;  // 9869.9480;
-                double centerY = spaceY - upperYgap;
-                //box boundaries
-                //vertical line
-                Point3d pt1 = new Point3d(tracex+boxlen,spaceY + 619.1209, 0);
-                Point3d Pt2 = new Point3d(tracex + boxlen, spaceY-boxht + 619.1209, 0);
-                Line line = new Line(pt1, Pt2);
-                AcadBlockTableRecord.AppendEntity(line);
-                line.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
-                AcadTransaction.AddNewlyCreatedDBObject(line, true);
-
-                
-                //hori line
-                Point3d pt11 = new Point3d(tracex , spaceY-boxht + 619.1209, 0);
-                Point3d Pt21 = new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0);
-                Line line1 = new Line(pt11, Pt21);
-                AcadBlockTableRecord.AppendEntity(line1);
-                line1.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
-                AcadTransaction.AddNewlyCreatedDBObject(line1, true);
-
-                FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                FixCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                FixCreateBottomSupportTopType2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                tracex += boxlen;
-            }
-            else
-            {
-
-                spaceY = 71075.0829;
-                tracex = tempX + 10000 + 619.1209;//gaps
-                // gets the template
-                GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,tracex- 619.1209);
-                tempX += 101659.6570 + 10000;
-                spaceX = tempX - 19068.9248;
             }
         }
 
@@ -1197,7 +1148,7 @@ namespace Project1.Support2D
         }
 
         [Obsolete]
-        void CreateLeaderfromfile(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase)
+        void CreateLeaderfromfile(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, double insertptX, double insertptY)
         {
 
 
@@ -1250,7 +1201,7 @@ namespace Project1.Support2D
             foreach (ObjectId id in ms)
             {
                 Point3d strpt = new Point3d(0, 0, 0);
-                Vector3d destvect = strpt.GetVectorTo(new Point3d(153334.4278, 117162.4417, 0));
+                Vector3d destvect = strpt.GetVectorTo(new Point3d(insertptX, insertptY, 0));
 
                 //BlockReference blkRef = tr2.GetObject(id, OpenMode.ForRead) as BlockReference;
                 //Point3d pos = blkRef.Position.Value;
@@ -1319,7 +1270,7 @@ namespace Project1.Support2D
         }
 
         [Obsolete]
-        void GetTemplate(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase,double inserptX)
+        void GetTemplate(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, double inserptX)
         {
 
             // Get the current working directory
@@ -1443,6 +1394,64 @@ namespace Project1.Support2D
 
         //all fix functions
 
+        [Obsolete]
+        public void CreateFullBlock(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, SupportType SupportType)
+        {
+            if (SupportType == SupportType.S_Type)
+            {
+                if (tracex >= spaceX - boxlen)
+                {
+                    spaceY -= boxht;
+                    tracex = tempX - 101659.6570 + 619.1209;
+                }
+                if (spaceY > boxht)
+                {
+                    double upperYgap = 3500;
+
+                    double centerX = tracex + boxlen / 2;  // 9869.9480;
+                    double centerY = spaceY - upperYgap;
+                    //box boundaries
+                    //vertical line
+                    Point3d pt1 = new Point3d(tracex + boxlen, spaceY + 619.1209, 0);
+                    Point3d Pt2 = new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0);
+                    Line line = new Line(pt1, Pt2);
+                    AcadBlockTableRecord.AppendEntity(line);
+                    line.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
+                    AcadTransaction.AddNewlyCreatedDBObject(line, true);
+
+
+                    //hori line
+                    Point3d pt11 = new Point3d(tracex, spaceY - boxht + 619.1209, 0);
+                    Point3d Pt21 = new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0);
+                    Line line1 = new Line(pt11, Pt21);
+                    AcadBlockTableRecord.AppendEntity(line1);
+                    line1.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
+                    AcadTransaction.AddNewlyCreatedDBObject(line1, true);
+
+                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+                    FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+                    FixCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+                    FixCreateBottomSupportTopType2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+                    tracex += boxlen;
+                }
+                else
+                {
+
+                    spaceY = 71075.0829;
+                    tracex = tempX + 10000 + 619.1209;//gaps
+                                                      // gets the template
+                                                      // GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,tracex- 619.1209);
+                    CopyPasteTemplateFile("Temp1", Document2D, tracex - 619.1209);
+                    tempX += 101659.6570 + 10000;
+                    spaceX = tempX - 19068.9248;
+                }
+            }
+
+
+        }
+
+
+
         //fix new function for primary support
         private void FixCreatePrimarySupportwithvertex(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, double centerX, double centerY)
         {
@@ -1546,9 +1555,6 @@ namespace Project1.Support2D
 
         }
 
-        //function for center mark
-
-
 
         //fix new function for Secondary Support Top
         private void FixCreateSecondarySupportTop(BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, double centerX, double centerY)
@@ -1559,8 +1565,14 @@ namespace Project1.Support2D
             var newline = new Polyline();
             //rectangular polyline
             Point2d Pt2D1 = new Point2d(centerX - length / 2, centerY - ht_frm_cen);
+
+            CreateDimension(new Point3d(centerX - length / 2, centerY - ht_frm_cen, 0), new Point3d(centerX, centerY, 0));
+
             newline.AddVertexAt(0, Pt2D1, 0, 0, 0);
             Pt2D1 = new Point2d(centerX + length / 2, centerY - ht_frm_cen);
+
+            CreateDimension(new Point3d(centerX + length / 2, centerY - ht_frm_cen, 0), new Point3d(centerX, centerY, 0));
+
             newline.AddVertexAt(1, Pt2D1, 0, 0, 0);
             Pt2D1 = new Point2d(centerX + length / 2, centerY - ht_frm_cen - height);
             newline.AddVertexAt(2, Pt2D1, 0, 0, 0);
@@ -1603,6 +1615,14 @@ namespace Project1.Support2D
             line.AddVertexAt(1, Pt2D1, 0, 0, 0);
             Pt2D1 = new Point2d(centerX + length / 2, centerY - ht_frm_cen - height);
             line.AddVertexAt(2, Pt2D1, 0, 0, 0);
+
+            //dimensioning
+            RotatedDimension dim = new RotatedDimension(Math.PI / 2, new Point3d(centerX + length / 2, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2, centerY - ht_frm_cen - height, 0), new Point3d(centerX + length / 2 + 2500, centerY - ht_frm_cen - height, 0), "", ObjectId.Null);
+            dim.Dimtxt = 100;
+            dim.Dimasz = 150;
+            acadBlockTableRecord.AppendEntity(dim);
+            AcadTransaction.AddNewlyCreatedDBObject(dim, true);
+
             Pt2D1 = new Point2d(centerX - length / 2, centerY - ht_frm_cen - height);
             line.AddVertexAt(3, Pt2D1, 0, 0, 0);
             Pt2D1 = new Point2d(centerX - length / 2, centerY - ht_frm_cen);
@@ -1702,6 +1722,7 @@ namespace Project1.Support2D
         }
 
         //fix new function for Bottom Support Top
+        [Obsolete]
         private void FixCreateBottomSupportTopType2(BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, double centerX, double centerY)
         {
 
@@ -1715,6 +1736,15 @@ namespace Project1.Support2D
             Pt2D1 = new Point2d(centerX + length / 2, centerY - ht_frm_cen);
             newline.AddVertexAt(1, Pt2D1, 0, 0, 0);
             Pt2D1 = new Point2d(centerX + length / 2, centerY - ht_frm_cen - height);
+
+            //dimensioning
+            RotatedDimension dim = new RotatedDimension(Math.PI / 2, new Point3d(centerX + length / 2, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2, centerY - ht_frm_cen - height, 0), new Point3d(centerX + length / 2 + 1400, centerY - ht_frm_cen - height, 0), "", ObjectId.Null);
+            dim.Dimtxt = 100;
+            dim.Dimasz = 150;
+
+            acadBlockTableRecord.AppendEntity(dim);
+            acadTransaction.AddNewlyCreatedDBObject(dim, true);
+
             newline.AddVertexAt(2, Pt2D1, 0, 0, 0);
             Pt2D1 = new Point2d(centerX - length / 2, centerY - ht_frm_cen - height);
             newline.AddVertexAt(3, Pt2D1, 0, 0, 0);
@@ -1751,6 +1781,8 @@ namespace Project1.Support2D
             insideupperblock.AddVertexAt(4, Pt2D2, 0, 0, 0);
             insideupperblock.AddVertexAt(4, Pt2D2, 0, 0, 0);
             insideupperblock.Color = Color.FromColorIndex(ColorMethod.ByAci, 8);
+
+            CreateLeaderfromfile(acadBlockTableRecord, acadTransaction, acadDatabase, centerX + length / 2 - offsetinside - 450, centerY - ht_frm_cen);
 
 
             if (acLineTypTbl.Has(sLineTypName) == true)
@@ -1796,5 +1828,105 @@ namespace Project1.Support2D
 
         }
 
+
+        //getting template
+        private void CopyPasteTemplateFile(string fileName, Document finalDocument, double inserptX)
+        {
+            ObjectIdCollection ids = new ObjectIdCollection();
+            DocumentCollection documentCollection = Application.DocumentManager;
+
+            string workingDirectory = Directory.GetCurrentDirectory();
+
+            // Get the project file path by searching for the .csproj file in the working directory
+            string projectFilePath = Directory.GetFiles(workingDirectory, "Mtemp.dwg").FirstOrDefault();
+
+            var tempDocument = documentCollection.Open(projectFilePath, false);
+            using (tempDocument.LockDocument())
+            {
+                var openDb = tempDocument.Database; using (Transaction trans = openDb.TransactionManager.StartTransaction())
+                {
+                    BlockTable bt = (BlockTable)trans.GetObject(openDb.BlockTableId, OpenMode.ForRead);
+                    BlockTableRecord btrsrc = trans.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+
+
+                    foreach (ObjectId id in btrsrc)
+                    {
+                        Point3d strpt = new Point3d(0, 0, 0);
+                        Vector3d destvect = strpt.GetVectorTo(new Point3d(inserptX, 0, 0));
+                        var ent = (Entity)trans.GetObject(id, OpenMode.ForWrite);
+                        ent.TransformBy(Matrix3d.Displacement(destvect));
+                        //ent.UpgradeOpen();
+                        if (ent.IsWriteEnabled)
+                        {
+                            // Object is not a proxy, clone it as-is
+                            ids.Add(id);
+                        }
+                        else
+                        {
+
+                        }
+
+
+                    }
+
+
+                    trans.Commit();
+                }
+            }
+            documentCollection.MdiActiveDocument = finalDocument;
+            if (ids.Count != 0)
+            {
+                using (finalDocument.LockDocument())
+                {
+                    Database destdb = finalDocument.Database;
+                    using (Transaction trans = destdb.TransactionManager.StartTransaction())
+                    {
+                        IdMapping iMap = new IdMapping();
+                        //logger.Debug("Entering Copying of Template File");
+                        destdb.WblockCloneObjects(ids, destdb.CurrentSpaceId, iMap, DuplicateRecordCloning.Replace, false);
+                        trans.Commit();
+                        //logger.Debug("Copied the Template File");
+                    }
+                }
+            }
+            tempDocument.CloseAndDiscard();
+        }
+
+        //dimension
+        public void CreateDimension(Point3d strpt, Point3d endpt)
+        {
+
+
+            Document doc = Application.DocumentManager.MdiActiveDocument;
+            Database db = doc.Database;
+            Editor ed = doc.Editor;
+
+            //dimension line point
+
+            // Create the dimension
+            using (Transaction tr = db.TransactionManager.StartTransaction())
+            {
+                BlockTableRecord btr = (BlockTableRecord)tr.GetObject(SymbolUtilityServices.GetBlockModelSpaceId(db), OpenMode.ForWrite);
+                RotatedDimension dim = new RotatedDimension(0, strpt, endpt, new Point3d(endpt.X, endpt.Y + 1800, 0), "", ObjectId.Null);
+
+                dim.Dimtxt = 100;
+                dim.Dimasz = 150;
+
+                btr.AppendEntity(dim);
+                tr.AddNewlyCreatedDBObject(dim, true);
+                tr.Commit();
+            }
+
+        }
+
+        //enum for support identification
+        public enum SupportType
+        {
+            Null = 0,
+            S_Type = 1,
+
+
+        }
     }
+
 }
