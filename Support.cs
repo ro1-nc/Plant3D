@@ -43,6 +43,9 @@ namespace Project1.Support2D
         //for collecting information
         Dictionary<Defination, double> info = new Dictionary<Defination, double>();
 
+
+        //get doc
+        public Document CurDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
         public void ReadSupportData()
         {
             Document AcadDoc = null;
@@ -1460,10 +1463,15 @@ namespace Project1.Support2D
 
                 string suptype = ListCentalSuppoData[0].SupportType;
 
-                for (int i = 0; i < ListCentalSuppoData.Count; i++)
+                for(int j=0;j<=9;j++)
                 {
-                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
+                    for (int i = 0; i < ListCentalSuppoData.Count; i++)
+                    {
+                        CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
+                    }
                 }
+
+                
 
 
 
@@ -1915,7 +1923,7 @@ namespace Project1.Support2D
         }
 
         [Obsolete]
-        public void CreateFullBlock(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, int i)
+        public void CreateFullBlock(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType,[Optional] int i)
         {
 
             info.Clear();
@@ -1932,70 +1940,7 @@ namespace Project1.Support2D
                 }
                 if (spaceY > boxht)
                 {
-                    double upperYgap = 3500;
-                    double centerX = tracex + boxlen / 2;  // 9869.9480;
-                    double centerY = spaceY - upperYgap;
-                    //box boundaries
-                    //vertical line
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-
-                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-
-                    double height = 1000;
-                    double length = 3000;
-
-
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
-
-                    //dimensioning
-                    CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-                    CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
-                    string TotalHt;
-
-                    //mtext
-
-                    if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-                    {
-                        TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                    }
-                    else
-                    {
-                        TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                    }
-
-                    CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
-
-                    info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
-
-                    height = 3000;
-                    length = 1000;
-
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
-
-                    //dimensioning
-                    string botsec;
-                    botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).ToString();
-
-
-                    CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0),botsec);
-
-                    info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height;
-
-                    height = 1000;
-                    length = 3000;
-
-                    FixCreateBottomSupportTopType2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length,i);
-
-                    //mtext
-                    CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Sec_ht_bot] + 300, 0), "HPP.(+)100.000");
-
-                    tracex += boxlen;
+                    DrawSupport2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
                 else
                 {
@@ -2007,6 +1952,7 @@ namespace Project1.Support2D
                     CopyPasteTemplateFile("Temp1", Document2D, tracex - 619.1209);
                     tempX += 101659.6570 + 10000;
                     spaceX = tempX - 19068.9248;
+                    DrawSupport2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
             }
 
@@ -2133,62 +2079,7 @@ namespace Project1.Support2D
                 }
                 if (spaceY > boxht)
                 {
-                    double upperYgap = 3500;
-
-                    double centerX = tracex + boxlen / 2;  // 9869.9480;
-                    double centerY = spaceY - upperYgap;
-                    //box boundaries
-                    //vertical line
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-
-                    double height = 1000;
-                    double length = 3000;
-                    //double ht_frm_cen = 1220.7383;
-
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
-
-                    //dimensioning
-                    CreateDimension(new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-                    CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-
-                    ////mtext
-                    //string TotalHt = "";
-
-                    //if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-                    //{
-                    //    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                    //}
-                    //else
-                    //{
-                    //    TotalHt =Math.Round( (ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z),2).ToString();
-                    //}
-
-                    //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
-
-
-                    info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
-
-                    height = 1000;
-                    length = 3000;
-
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing);
-
-                    //dimensioning
-                    string botsec;
-                    botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).ToString();
-
-                    CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0),botsec);
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
-
-                    tracex += boxlen;
+                    DrawSupport3(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
                 else
                 {
@@ -2200,6 +2091,7 @@ namespace Project1.Support2D
                     CopyPasteTemplateFile("Temp1", Document2D, tracex - 619.1209);
                     tempX += 101659.6570 + 10000;
                     spaceX = tempX - 19068.9248;
+                    DrawSupport3(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
             }
 
@@ -2214,71 +2106,7 @@ namespace Project1.Support2D
                 }
                 if (spaceY > boxht)
                 {
-                    double upperYgap = 3500;
-
-                    double centerX = tracex + boxlen / 2;  // 9869.9480;
-                    double centerY = spaceY - upperYgap;
-                    //box boundaries
-                    //vertical line
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-
-                    double height = 1000;
-                    double length = 3000;
-                    //double ht_frm_cen = 1220.7383;
-
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
-
-                    //dimensioning
-                    CreateDimension(new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-                    CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
-
-
-                    string TotalHt;
-
-                    //mtext
-
-                    if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-                    {
-                        TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                    }
-                    else
-                    {
-                        TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                    }
-
-
-                    CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
-
-                    info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
-
-                    height = 3000;
-                    length = 1000;
-                    info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height;
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
-
-                    //dimensioning
-                    //dimensioning
-                    string botsec;
-
-                    botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).ToString();
-
-                    CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0),botsec);
-
-                    height = 1000;
-                    length = 3000;
-                    //FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                    FixCreateBottomSupportTopType2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, (centerX - length * 0.66 + centerX - length * 0.66 + height) / 2, centerY, height, length,i);
-                    tracex += boxlen;
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
-
+                    DrawSupport4(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
                 else
                 {
@@ -2290,6 +2118,7 @@ namespace Project1.Support2D
                     CopyPasteTemplateFile("Temp1", Document2D, tracex - 619.1209);
                     tempX += 101659.6570 + 10000;
                     spaceX = tempX - 19068.9248;
+                    DrawSupport4(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
             }
 
@@ -2304,69 +2133,7 @@ namespace Project1.Support2D
                 }
                 if (spaceY > boxht)
                 {
-                    double upperYgap = 3500;
-
-                    double centerX = tracex + boxlen / 2;  // 9869.9480;
-                    double centerY = spaceY - upperYgap;
-                    //box boundaries
-                    //vertical line
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
-
-                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-
-                    double height = 1000;
-                    double length = 3000;
-                    //double ht_frm_cen = 1220.7383;
-
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
-
-                    //dimensioning
-                    CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-                    CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
-
-                    string TotalHt;
-
-                    //mtext
-
-                    if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-                    {
-                        TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                    }
-                    else
-                    {
-                        TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                    }
-
-
-                    CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
-
-                    info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
-
-                    height = 3000;
-                    length = 1000;
-                    info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height + 1000;
-                    BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
-
-                    //dimensioning
-                    //dimensioning
-                    string botsec;
-                    botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).ToString();
-
-                    CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0),botsec);
-
-                    height = 1000;
-                    length = 3000;
-                    //FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                    FixCreateBottomSupportTopType2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, (centerX - length * 0.66 + centerX - length * 0.66 + height) / 2, centerY, height, length,i);
-                    tracex += boxlen;
-
-                    LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
-
+                    DrawSupport5(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
                 else
                 {
@@ -2378,6 +2145,7 @@ namespace Project1.Support2D
                     CopyPasteTemplateFile("Temp1", Document2D, tracex - 619.1209);
                     tempX += 101659.6570 + 10000;
                     spaceX = tempX - 19068.9248;
+                    DrawSupport5(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
             }
 
@@ -2482,10 +2250,6 @@ namespace Project1.Support2D
             // Get the current space
             BlockTableRecord btrsrc = tr2.GetObject(btsrc[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
-            //Create a matrix and move the block using vector from (0,0,0) to (153334.4278,117162.4417,0)
-            //Point3d strpt = new Point3d(0, 0, 0);
-            //Vector3d destvect = strpt.GetVectorTo(new Point3d(153334.4278, 117162.4417, 0));
-
             // get the model space object ids for both dbs
             ObjectId sourceMsId = SymbolUtilityServices.GetBlockModelSpaceId(db);
             ObjectId destDbMsId = SymbolUtilityServices.GetBlockModelSpaceId(AcadDatabase);
@@ -2505,11 +2269,6 @@ namespace Project1.Support2D
                 Point3d strpt = new Point3d(0, 0, 0);
                 Vector3d destvect = strpt.GetVectorTo(new Point3d(insertptX, insertptY, 0));
 
-                //BlockReference blkRef = tr2.GetObject(id, OpenMode.ForRead) as BlockReference;
-                //Point3d pos = blkRef.Position.Value;
-
-
-
                 var ent = (Entity)tr2.GetObject(id, OpenMode.ForWrite);
                 var ent2 = (Entity)tr2.GetObject(id, OpenMode.ForRead);
                 ent.TransformBy(Matrix3d.Displacement(destvect));
@@ -2519,58 +2278,20 @@ namespace Project1.Support2D
             }
 
             // next prepare to deepclone the recorded ids to the destdb
-
             IdMapping mapping = new IdMapping();
-
             // now clone the objects into the destdb
 
             db.WblockCloneObjects(sourceIds, destDbMsId, mapping, DuplicateRecordCloning.Replace, false);
-
-            //AcadDatabase.SaveAs("c:\\temp\\dwgs\\CopyTest.dwg", DwgVersion.Current);
-
-            //AcadDatabase.Save();
-
             tr2.Commit();
             db.Dispose();
-            //// Read the DWG file into the database object
-            //string dwgPath = "D:\\Projects\\Plant 3D\\Testmod.dwg";
-            //db.ReadDwgFile(dwgPath, FileOpenMode.OpenForReadAndWriteNoShare, true, "");
 
-            //List<Entity> entitiesToReturn = new List<Entity>(); //Blocks that will be returned
-            //Transaction tr = db.TransactionManager.StartTransaction();
-            ////DocumentLock docLock = _activeDocument.LockDocument();
-
-            //using (tr)
-            ////using (docLock)
-            //{
-            //    BlockTableRecord blockTableRecord = (BlockTableRecord)tr.GetObject(SymbolUtilityServices.GetBlockModelSpaceId(db), OpenMode.ForRead);
-            //    foreach (ObjectId id in blockTableRecord)
-            //    {
-            //        try
-            //        {
-            //            Entity ent = (Entity)tr.GetObject(id, OpenMode.ForWrite);
-            //            entitiesToReturn.Add(ent);
-            //        }
-            //        catch (InvalidCastException)
-            //        {
-            //            continue;
-            //        }
-            //    }
-            //}
-
-
-
-            //foreach(Entity ent in entitiesToReturn)
-            //{
-            //    AcadBlockTableRecord.AppendEntity(ent);
-            //    tr.AddNewlyCreatedDBObject(ent, true);
-            //}
         }
 
 
         //fix new function for Bottom Support Top
+
         [Obsolete]
-        private void FixCreateBottomSupportTopType2(BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, double centerX, double centerY, double height, double length,int i)
+        private void FixCreateBottomSupportTopType2(Document Document2D, BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, double centerX, double centerY, double height, double length,[Optional] int i)
         {
 
             double ht_frm_cen = info[Defination.Sec_ht_bot];
@@ -2661,6 +2382,7 @@ namespace Project1.Support2D
 
             CreateLeaderfromfile(acadBlockTableRecord, acadTransaction, acadDatabase, centerX + length / 2 - offsetinside - 450, centerY - ht_frm_cen);
 
+            //InsertBlockOnDocument("LeaderBlock", Document2D, centerX + length / 2 - offsetinside - 450, centerY - ht_frm_cen);
 
             if (acLineTypTbl.Has(sLineTypName) == true)
             {
@@ -2940,6 +2662,11 @@ namespace Project1.Support2D
             }
         }
 
+
+        private static string _DBText(ObjectId id)
+        {
+            return id.ObjectClass.Name + " " + id.Handle.ToString();
+        }
         private void FixCreatePrimarySupportwithvertex(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, double centerX, double centerY)
         {
             double ht_frm_cen = 1220.7383;
@@ -2967,8 +2694,6 @@ namespace Project1.Support2D
             circle.Linetype = sLineTypName;
             circle.LinetypeScale = 0.2;
             circle.Color = Color.FromColorIndex(ColorMethod.ByAci, 8);
-
-
 
             AcadBlockTableRecord.AppendEntity(circle);
             AcadTransaction.AddNewlyCreatedDBObject(circle, true);
@@ -3698,8 +3423,283 @@ namespace Project1.Support2D
             HidBottom
         }
 
+        //for distance
+        public double GetDist(Point3d strpt,Point3d endpt)
+        {
+            double dist = Math.Sqrt(Math.Pow(endpt.X - strpt.X, 2) + Math.Pow(endpt.Y - strpt.Y, 2) + Math.Pow(endpt.Z - strpt.Z, 2));
+            return dist;
+        }
+
+        //support details
+        [Obsolete]
+        public void DrawSupport2(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
+        {
+            
+                double upperYgap = 3500;
+                double centerX = tracex + boxlen / 2;  // 9869.9480;
+                double centerY = spaceY - upperYgap;
+                //box boundaries
+                //vertical line
+                LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+                LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
 
+                FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+
+                double height = 1000;
+                double length = 3000;
+
+
+                BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
+
+                //dimensioning
+
+                var ldist = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor");
+
+                CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+                CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+
+
+                LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+                string TotalHt;
+
+                //mtext
+
+                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+                else
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+
+                CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
+
+                info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
+                height = 3000;
+                length = 1000;
+
+                BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
+
+                //dimensioning
+                var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+                CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), botsec);
+
+                info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height;
+
+                height = 1000;
+                length = 3000;
+
+                FixCreateBottomSupportTopType2(Document2D,AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length, i);
+
+                //mtext
+                CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Sec_ht_bot] + 300, 0), "HPP.(+)100.000");
+
+                tracex += boxlen;
+            
+        }
+
+        public void DrawSupport3(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
+        {
+            double upperYgap = 3500;
+
+            double centerX = tracex + boxlen / 2;  // 9869.9480;
+            double centerY = spaceY - upperYgap;
+            //box boundaries
+            //vertical line
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+
+            double height = 1000;
+            double length = 3000;
+            //double ht_frm_cen = 1220.7383;
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
+
+            //dimensioning
+            CreateDimension(new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+            CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+
+            ////mtext
+            //string TotalHt = "";
+
+            //if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+            //{
+            //    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            //}
+            //else
+            //{
+            //    TotalHt =Math.Round( (ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z),2).ToString();
+            //}
+
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
+
+
+            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
+            height = 1000;
+            length = 3000;
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing);
+
+            //dimensioning
+            var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), botsec);
+
+            //hori small dimen
+            var botsec2 = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), botsec2);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
+
+            tracex += boxlen;
+
+        }
+
+        public void DrawSupport4(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
+        {
+            double upperYgap = 3500;
+
+            double centerX = tracex + boxlen / 2;  // 9869.9480;
+            double centerY = spaceY - upperYgap;
+            //box boundaries
+            //vertical line
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+
+            double height = 1000;
+            double length = 3000;
+            //double ht_frm_cen = 1220.7383;
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
+
+            //dimensioning
+            CreateDimension(new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+            CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+
+
+            string TotalHt;
+
+            //mtext
+
+            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
+            else
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
+
+
+            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
+
+            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
+            height = 3000;
+            length = 1000;
+            info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height;
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
+
+            //dimensioning
+
+            var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), botsec);
+
+            height = 1000;
+            length = 3000;
+            //FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+            FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, (centerX - length * 0.66 + centerX - length * 0.66 + height) / 2, centerY, height, length, i);
+            tracex += boxlen;
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
+
+        }
+
+
+        public void DrawSupport5(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
+        {
+            double upperYgap = 3500;
+
+            double centerX = tracex + boxlen / 2;  // 9869.9480;
+            double centerY = spaceY - upperYgap;
+            //box boundaries
+            //vertical line
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+
+            double height = 1000;
+            double length = 3000;
+            //double ht_frm_cen = 1220.7383;
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
+
+            //dimensioning
+            CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+            CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+
+            string TotalHt;
+
+            //mtext
+
+            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
+            else
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
+
+
+            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
+
+            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
+            height = 3000;
+            length = 1000;
+            info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height;
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top] + 1000, 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] + 1000, 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - height * 0.66, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
+
+            //dimensioning
+            var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), botsec);
+
+            height = 1000;
+            length = 3000;
+            //FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+            FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, (centerX - length * 0.66 + centerX - length * 0.66 + height) / 2, centerY, height, length, i);
+            tracex += boxlen;
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
+
+        }
         //enum for support identification
         public enum SupportType
         {
