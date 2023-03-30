@@ -43,6 +43,14 @@ namespace Project1.Support2D
         //for collecting information
         Dictionary<Defination, double> info = new Dictionary<Defination, double>();
 
+        //for collecting extra info
+        Dictionary<string, double> extrainfo = new Dictionary<string, double>();
+
+        //dictionary for determining parts
+        public Dictionary<string, string> Csectiondetails = new Dictionary<string, string>();
+
+        public Dictionary<string, string> Lsectiondetails = new Dictionary<string, string>();
+
 
         //get doc
         public Document CurDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
@@ -1339,14 +1347,7 @@ namespace Project1.Support2D
         }
 
 
-        public enum Defination
-        {
-            Prim_Radius,
-            Prim_ht,
-            Sec_ht_top,
-            Sec_ht_bot
 
-        }
 
         [Obsolete]
         public void Create2D()
@@ -1450,9 +1451,52 @@ namespace Project1.Support2D
 
                 //GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,0);
 
-                //logic for adding block
+                //adding values to c section dictionary
+                Csectiondetails.Add("75x40 ", "ISMC 75");
+                Csectiondetails.Add("100x50", "ISMC 100 ");
+                Csectiondetails.Add("125x65 ", "ISMC 125");
+                Csectiondetails.Add("125x66 ", "ISMC 125*");
+                Csectiondetails.Add("150x75 ", "ISMC 150");
+                Csectiondetails.Add("150x76 ", "ISMC 150*");
+                Csectiondetails.Add("175x75 ", "ISMC 175");
+                Csectiondetails.Add("175x76 ", "ISMC 175*");
+                Csectiondetails.Add("200x75 ", "ISMC 200");
+                Csectiondetails.Add("200x76 ", "ISMC 200*");
+                Csectiondetails.Add("225x80 ", "ISMC 225");
+                Csectiondetails.Add("225x82 ", "ISMC 225*");
+                Csectiondetails.Add("250x80 ", "ISMC 250");
+                Csectiondetails.Add("250x82 ", "ISMC 250*");
+                Csectiondetails.Add("250x83 ", "ISMC 250*");
+                Csectiondetails.Add("300x90 ", "ISMC 300");
+                Csectiondetails.Add("300x92 ", "ISMC 300*");
+                Csectiondetails.Add("300x93 ", "ISMC 300*");
+                Csectiondetails.Add("350x100", "ISMC 350");
+                Csectiondetails.Add("400x100", "ISMC 400");
 
-                //9869.9480;
+
+
+                //adding values to L section dictionary
+
+                Lsectiondetails.Add(" 75 40", "ISLC 75");
+                Lsectiondetails.Add(" 100 50", "ISLC 100 ");
+                Lsectiondetails.Add("125 65 ", "ISLC 125");
+                Lsectiondetails.Add("125 65 ", "ISLC(P) 125");
+                Lsectiondetails.Add("150 75 ", "ISLC 150");
+                Lsectiondetails.Add("150 75 ", "ISLC(P) 150");
+                Lsectiondetails.Add("175 75 ", "ISLC 175");
+                Lsectiondetails.Add("200 75 ", "ISLC 200");
+                Lsectiondetails.Add("200 75 ", "ISLC(P) 200");
+                Lsectiondetails.Add("225 90 ", "ISLC 225");
+                Lsectiondetails.Add("250 100", "ISLC 250");
+                Lsectiondetails.Add("300 100", "ISLC 300");
+                Lsectiondetails.Add("300 90 ", "ISLC(P) 300");
+                Lsectiondetails.Add("350 100", "ISLC 350");
+                Lsectiondetails.Add("400 100", "ISLC 400");
+
+
+                //logic for adding block      
+
+                //9869.9480;                  
                 //67542.6980;
                 //adding blocks here
 
@@ -1463,15 +1507,15 @@ namespace Project1.Support2D
 
                 string suptype = ListCentalSuppoData[0].SupportType;
 
-                for(int j=0;j<=9;j++)
+                //for (int j = 0; j <= 1; j++)
+                //{
+                for (int i = 0; i < ListCentalSuppoData.Count; i++)
                 {
-                    for (int i = 0; i < ListCentalSuppoData.Count; i++)
-                    {
-                        CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
-                    }
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
+                //}
 
-                
+
 
 
 
@@ -1923,11 +1967,13 @@ namespace Project1.Support2D
         }
 
         [Obsolete]
-        public void CreateFullBlock(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType,[Optional] int i)
+        public void CreateFullBlock(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
         {
 
             info.Clear();
             info.Add(Defination.Prim_Radius, 0);
+            info[Defination.Concrete_l] = 3000;
+            info[Defination.Concrete_b] = 1000;
 
             if (SupType == SupportType.Support2.ToString())
             {
@@ -1995,7 +2041,7 @@ namespace Project1.Support2D
                     //  FixCreateBottomSupportTopType2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length);
                     FixCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, "Left");
                     FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
 
                     tracex += boxlen;
                 }
@@ -2051,7 +2097,7 @@ namespace Project1.Support2D
                     // FixCreateBottomSupportTopType2(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length);
                     FixCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, "Right");
                     FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+                    FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
 
                     tracex += boxlen;
                 }
@@ -2146,6 +2192,33 @@ namespace Project1.Support2D
                     tempX += 101659.6570 + 10000;
                     spaceX = tempX - 19068.9248;
                     DrawSupport5(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
+                }
+            }
+
+            else if (SupType == SupportType.Support6.ToString())
+            {
+                boxlen = 17299.3016;
+                boxht = 12734.3388;
+                if (tracex >= spaceX - boxlen)
+                {
+                    spaceY -= boxht;
+                    tracex = tempX - 101659.6570 + 619.1209;
+                }
+                if (spaceY > boxht)
+                {
+                    DrawSupport6(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
+                }
+                else
+                {
+
+                    spaceY = 71075.0829;
+                    tracex = tempX + 10000 + 619.1209;//gaps
+                                                      // gets the template
+                                                      // GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,tracex- 619.1209);
+                    CopyPasteTemplateFile("Temp1", Document2D, tracex - 619.1209);
+                    tempX += 101659.6570 + 10000;
+                    spaceX = tempX - 19068.9248;
+                    DrawSupport6(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
             }
 
@@ -2291,7 +2364,7 @@ namespace Project1.Support2D
         //fix new function for Bottom Support Top
 
         [Obsolete]
-        private void FixCreateBottomSupportTopType2(Document Document2D, BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, double centerX, double centerY, double height, double length,[Optional] int i)
+        private void FixCreateBottomSupportTopType2(Document Document2D, BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, double centerX, double centerY, double height, double length, [Optional] int i)
         {
 
             double ht_frm_cen = info[Defination.Sec_ht_bot];
@@ -2339,7 +2412,8 @@ namespace Project1.Support2D
             LinetypeTable acLineTypTbl;
             acLineTypTbl = acadTransaction.GetObject(acadDatabase.LinetypeTableId,
                                                    OpenMode.ForRead) as LinetypeTable;
-            string sLineTypName = "DASHED";
+
+            string sLineTypName = "CENTERX2";
             if (acLineTypTbl.Has(sLineTypName) == false)
             {
                 acadDatabase.LoadLineTypeFile(sLineTypName, "acad.lin");
@@ -2560,7 +2634,7 @@ namespace Project1.Support2D
 
         }
 
-        public void CreateDimension(Point3d strpt, Point3d endpt,[Optional] string topsec)
+        public void CreateDimension(Point3d strpt, Point3d endpt, [Optional] string topsec)
         {
 
 
@@ -2667,16 +2741,19 @@ namespace Project1.Support2D
         {
             return id.ObjectClass.Name + " " + id.Handle.ToString();
         }
-        private void FixCreatePrimarySupportwithvertex(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, double centerX, double centerY)
+        private void FixCreatePrimarySupportwithvertex(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, double centerX, double centerY, double radius)
         {
-            double ht_frm_cen = 1220.7383;
-            info[Defination.Prim_ht] = ht_frm_cen;
+
 
             Point3d center = new Point3d(centerX, centerY, 0);
-            double radius = 801.5625;
+            // radius = 801.5625;
 
             //stores radius value
             info[Defination.Prim_Radius] = radius;
+
+            double ht_frm_cen = radius * 1.5;
+
+            info[Defination.Prim_ht] = ht_frm_cen;
 
             LinetypeTable acLineTypTbl;
             acLineTypTbl = AcadTransaction.GetObject(AcadDatabase.LinetypeTableId,
@@ -2695,6 +2772,26 @@ namespace Project1.Support2D
             circle.LinetypeScale = 0.2;
             circle.Color = Color.FromColorIndex(ColorMethod.ByAci, 8);
 
+
+            // Create a new diametric dimension entity
+            Point3d chordPoint = new Point3d(center.X + radius, center.Y, center.Z);
+            Point3d farChordPoint = new Point3d(center.X - radius, center.Y, center.Z);
+            double leaderLength = 1.0; // The length of the dimension leader line
+            string dimensionText = ""; // The dimension text, which is automatically generated
+            ObjectId dimStyleId = AcadDatabase.Dimstyle; // The object ID of the dimension style to use
+            RadialDimension dim = new RadialDimension(circle.Center, chordPoint, leaderLength, dimensionText, dimStyleId);
+            dim.Dimcen = radius;
+
+            //// Create a new dimension style with the desired center mark type
+            //DimensionStyle newDimStyle = dimStyle.Clone() as DimensionStyle;
+            //newDimStyle.CenterMarkType = CenterMarkStyle.Arc;
+
+            //var abc = dim.CenterMarkSize;linety
+            //dim.CenterMarkSize=
+            // Add the dimension to the drawing database
+            AcadBlockTableRecord.AppendEntity(dim);
+            AcadTransaction.AddNewlyCreatedDBObject(dim, true);
+
             AcadBlockTableRecord.AppendEntity(circle);
             AcadTransaction.AddNewlyCreatedDBObject(circle, true);
 
@@ -2711,35 +2808,6 @@ namespace Project1.Support2D
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + radius + 1500, centerY - 100, 0), "CL.EL.(+)100." + info[Defination.Prim_ht].ToString());
 
-            ////center mark
-            ////centerline
-            //Point3d cpt1 = new Point3d(centerX, centerY + radius + 250, 0);
-            //Point3d cPt2 = new Point3d(centerX, centerY - radius - 250, 0);
-            //Line cline = new Line(cpt1, cPt2);
-            //cline.Linetype = "PHANTOM2";
-            //cline.Color = Color.FromColor(System.Drawing.Color.Red);
-            //AcadBlockTableRecord.AppendEntity(cline);
-            ////cline.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
-            //AcadTransaction.AddNewlyCreatedDBObject(cline, true);
-
-            //Point3d cpt11 = new Point3d(centerX + radius + 250, centerY, 0);
-            //Point3d cPt21 = new Point3d(centerX - radius - 250, centerY, 0);
-            //Line cline1 = new Line(cpt11, cPt21);
-            //cline1.Linetype = "PHANTOM2";
-            //cline1.Color = Color.FromColor(MyCol.Red);
-            //AcadBlockTableRecord.AppendEntity(cline1);
-            ////  cline1.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
-            //AcadTransaction.AddNewlyCreatedDBObject(cline1, true);
-
-            ////centerline
-            //Point3d lcpt1 = new Point3d(centerX, centerY + radius + 250, 0);
-            //Point3d lcPt2 = new Point3d(centerX, centerY - info[Defination.Prim_ht] - 250, 0);
-            //Line lcline = new Line(lcpt1, lcPt2);
-            //lcline.Linetype = "PHANTOM2";
-            //lcline.Color = Color.FromColor(System.Drawing.Color.Red);
-            //AcadBlockTableRecord.AppendEntity(lcline);
-            //// lcline.Color = Color.FromColorIndex(ColorMethod.ByAci, 171);
-            //AcadTransaction.AddNewlyCreatedDBObject(lcline, true);
 
             secCircle.Radius = radius - 5;
             secCircle.Center = center;
@@ -2808,7 +2876,7 @@ namespace Project1.Support2D
         }
 
 
-        public void CreateMtextfunc(BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, Point3d location, string text)
+        public void CreateMtextfunc(BlockTableRecord acadBlockTableRecord, Transaction acadTransaction, Database acadDatabase, Point3d location, string text, double textheight = 200)
         {
 
             // Create a new MText object with some text
@@ -2818,7 +2886,7 @@ namespace Project1.Support2D
 
             // Set the position of the MText object
             mtext.Location = location;
-            mtext.TextHeight = 200;
+            mtext.TextHeight = textheight;
 
             // Add the MText object to the drawing
             acadBlockTableRecord.AppendEntity(mtext);
@@ -3159,13 +3227,25 @@ namespace Project1.Support2D
         //linedraw
 
         /// <param name="AcadBlockTableRecord">My number parameter</param>
-        public void LineDraw(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Point3d startpt, Point3d endpt, MyCol color, [Optional] string Linetype)
+        public void LineDraw(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction,Database acadDatabase, Point3d startpt, Point3d endpt, MyCol color, [Optional] string Linetype)
         {
             Point3d cpt1 = startpt;//new Point3d(centerX, centerY + radius + 250, 0);
             Point3d cPt2 = endpt;// new Point3d(centerX, centerY - radius - 250, 0);
             Line cline = new Line(cpt1, cPt2);
+
+            
             try
             {
+                LinetypeTable acLineTypTbl;
+                acLineTypTbl = AcadTransaction.GetObject(acadDatabase.LinetypeTableId,
+                                                       OpenMode.ForRead) as LinetypeTable;
+
+                if (acLineTypTbl.Has(Linetype) == false)
+                {
+                    acadDatabase.LoadLineTypeFile(Linetype, "acad.lin");
+                    cline.Linetype = Linetype;
+
+                }
                 cline.Linetype = Linetype;
             }
             catch (Exception e)
@@ -3217,66 +3297,66 @@ namespace Project1.Support2D
             thickness = 100;
             //if(secthik==SecThick.Both)
             //{
-            //    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
-            //    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+            //    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+            //    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
             //}
 
             switch (secthik)
             {
                 case SecThick.HBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HHidBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
                     break;
                 case SecThick.Left:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidLeft:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
                     break;
                 case SecThick.Right:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidRight:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
                     break;
 
 
 
                 case SecThick.VBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2, centerY - ht_frm_cen - thickness, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2, centerY - ht_frm_cen - thickness, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
                     break;
                 case SecThick.VHidBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
                     break;
                 case SecThick.Top:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidTop:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
                     break;
                 case SecThick.Bottom:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidBottom:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.Yellow, "DASHED");
                     break;
 
 
@@ -3288,75 +3368,75 @@ namespace Project1.Support2D
         private void BoxGenCreateSecondarySupportBottom(BlockTableRecord acadBlockTableRecord, Transaction AcadTransaction, Database acadDatabase, Point3d lefttop, Point3d righttop, Point3d rightbot, Point3d leftbot, SecThick secthik, double thickness = 100)
         {
 
-            LineDraw(acadBlockTableRecord, AcadTransaction, lefttop, righttop, MyCol.PaleTurquoise);
-            LineDraw(acadBlockTableRecord, AcadTransaction, righttop, rightbot, MyCol.PaleTurquoise);
-            LineDraw(acadBlockTableRecord, AcadTransaction, rightbot, leftbot, MyCol.PaleTurquoise);
-            LineDraw(acadBlockTableRecord, AcadTransaction, leftbot, lefttop, MyCol.PaleTurquoise);
+            LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, lefttop, righttop, MyCol.PaleTurquoise);
+            LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, righttop, rightbot, MyCol.PaleTurquoise);
+            LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, rightbot, leftbot, MyCol.PaleTurquoise);
+            LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, leftbot, lefttop, MyCol.PaleTurquoise);
 
 
             thickness = 100;
             //if(secthik==SecThick.Both)
             //{
-            //    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
-            //    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+            //    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen, 0), new Point3d(centerX - length / 2 + thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
+            //    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen, 0), new Point3d(centerX + length / 2 - thickness, centerY - ht_frm_cen - height, 0), MyCol.LightBlue);
             //}
 
             switch (secthik)
             {
                 case SecThick.VBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue);
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue);
                     break;
                 case SecThick.VHidBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue, "DASHED");
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue, "DASHED");
                     break;
                 case SecThick.Left:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidLeft:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X + thickness, lefttop.Y, 0), new Point3d(leftbot.X + thickness, leftbot.Y, 0), MyCol.LightBlue, "DASHED");
                     break;
                 case SecThick.Right:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidRight:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(righttop.X - thickness, righttop.Y, 0), new Point3d(rightbot.X - thickness, rightbot.Y, 0), MyCol.LightBlue, "DASHED");
                     break;
 
 
 
                 case SecThick.HBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue);
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HHidBoth:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue, "DASHED");
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue, "DASHED");
                     break;
                 case SecThick.Top:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidTop:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(lefttop.X, lefttop.Y - thickness, 0), new Point3d(righttop.X, righttop.Y - thickness, 0), MyCol.LightBlue, "DASHED");
                     break;
                 case SecThick.Bottom:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue);
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue);
                     break;
                 case SecThick.HidBottom:
                     // code block
-                    LineDraw(acadBlockTableRecord, AcadTransaction, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue, "DASHED");
+                    LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(leftbot.X, leftbot.Y + thickness, 0), new Point3d(rightbot.X, rightbot.Y + thickness, 0), MyCol.LightBlue, "DASHED");
                     break;
 
 
@@ -3365,7 +3445,7 @@ namespace Project1.Support2D
         }
 
         //aligh dimensioning
-        public void CreateAlighDimen(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Point3d startpt, Point3d endpt,[Optional] string dimtxt)
+        public void CreateAlighDimen(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Point3d startpt, Point3d endpt, [Optional] string dimtxt)
         {
 
             Line parallelline = CreateParallelLine(startpt, endpt, -2500);
@@ -3424,7 +3504,7 @@ namespace Project1.Support2D
         }
 
         //for distance
-        public double GetDist(Point3d strpt,Point3d endpt)
+        public double GetDist(Point3d strpt, Point3d endpt)
         {
             double dist = Math.Sqrt(Math.Pow(endpt.X - strpt.X, 2) + Math.Pow(endpt.Y - strpt.Y, 2) + Math.Pow(endpt.Z - strpt.Z, 2));
             return dist;
@@ -3434,73 +3514,77 @@ namespace Project1.Support2D
         [Obsolete]
         public void DrawSupport2(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
         {
-            
-                double upperYgap = 3500;
-                double centerX = tracex + boxlen / 2;  // 9869.9480;
-                double centerY = spaceY - upperYgap;
-                //box boundaries
-                //vertical line
-                LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
-                LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+            double upperYgap = 3500;
+            double centerX = tracex + boxlen / 2;  // 9869.9480;
+            double centerY = spaceY - upperYgap;
+            //box boundaries
+            //vertical line
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
-
-                FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
-
-                double height = 1000;
-                double length = 3000;
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
 
-                BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
 
-                //dimensioning
-
-                var ldist = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor");
-
-                CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
-                CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+            double height = 1000;
+            double length = 3000;
 
 
-                LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
-                string TotalHt;
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
 
-                //mtext
+            //dimensioning
 
-                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-                {
-                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                }
-                else
-                {
-                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-                }
+            var ldist = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor");
 
-                CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
+            CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+            CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
 
-                info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
-                height = 3000;
-                length = 1000;
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            string TotalHt;
 
-                BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
+            //mtext
 
-                //dimensioning
-                var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
+            else
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
 
-                CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), botsec);
+            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
 
-                info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height;
+            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
-                height = 1000;
-                length = 3000;
+            height = 3000;
+            length = 1000;
 
-                FixCreateBottomSupportTopType2(Document2D,AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length, i);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), new Point3d(centerX - length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), SecThick.VBoth);
 
-                //mtext
-                CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Sec_ht_bot] + 300, 0), "HPP.(+)100.000");
+            //dimensioning
+            var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
 
-                tracex += boxlen;
-            
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX + length / 2, centerY - info[Defination.Sec_ht_top] - height, 0), botsec);
+
+            info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height;
+
+            height = 1000;
+            length = 3000;
+            info[Defination.Concrete_l] = length;
+            info[Defination.Concrete_b] = height;
+
+            FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length, i);
+
+
+            //support name and quantity
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i);
+
+
+            tracex += boxlen;
+
         }
 
         public void DrawSupport3(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
@@ -3511,12 +3595,12 @@ namespace Project1.Support2D
             double centerY = spaceY - upperYgap;
             //box boundaries
             //vertical line
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
-            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
 
             double height = 1000;
             double length = 3000;
@@ -3560,14 +3644,18 @@ namespace Project1.Support2D
 
             CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), botsec2);
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
+
+            //support name and quantity
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i);
 
             tracex += boxlen;
 
         }
 
+        [Obsolete]
         public void DrawSupport4(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
         {
             double upperYgap = 3500;
@@ -3576,11 +3664,11 @@ namespace Project1.Support2D
             double centerY = spaceY - upperYgap;
             //box boundaries
             //vertical line
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
-            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
 
             double height = 1000;
             double length = 3000;
@@ -3593,7 +3681,7 @@ namespace Project1.Support2D
             CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
 
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
 
             string TotalHt;
@@ -3627,15 +3715,29 @@ namespace Project1.Support2D
 
             height = 1000;
             length = 3000;
+            info[Defination.Concrete_l] = length;
+            info[Defination.Concrete_b] = height;
             //FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
             FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, (centerX - length * 0.66 + centerX - length * 0.66 + height) / 2, centerY, height, length, i);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
+
+            ////hori small dimen
+            //var botsec2 = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            //CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), botsec2);
+
+            //LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
+
+            //LineDraw(acadBlockTableRecord, AcadTransaction,acadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
+
+            //support name and quantity
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i);
+
             tracex += boxlen;
-
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
-
         }
 
-
+        [Obsolete]
         public void DrawSupport5(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
         {
             double upperYgap = 3500;
@@ -3644,11 +3746,11 @@ namespace Project1.Support2D
             double centerY = spaceY - upperYgap;
             //box boundaries
             //vertical line
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
-            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
 
             double height = 1000;
             double length = 3000;
@@ -3661,7 +3763,7 @@ namespace Project1.Support2D
             CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
 
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
             string TotalHt;
 
@@ -3693,13 +3795,173 @@ namespace Project1.Support2D
 
             height = 1000;
             length = 3000;
+            info[Defination.Concrete_l] = length;
+            info[Defination.Concrete_b] = height;
             //FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
             FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, (centerX - length * 0.66 + centerX - length * 0.66 + height) / 2, centerY, height, length, i);
+
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
+
+            //hori small dimen
+            var botsec2 = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), botsec2);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
+
+            //support name and quantity
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i);
+
             tracex += boxlen;
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
 
         }
+
+        [Obsolete]
+        public void DrawSupport6(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
+        {
+            double upperYgap = 2500;
+
+            double centerX = tracex + boxlen / 2;  // 9869.9480;
+            double centerY = spaceY - upperYgap;
+            //box boundaries
+            //vertical line
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
+
+
+
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - 500, centerY, 801.5625);
+
+            double height = 1000;
+            double length = 4000;
+
+            info[Defination.Sec_top_l] = length;
+            info[Defination.Sec_top_b] = height;
+            //double ht_frm_cen = 1220.7383;
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
+
+            //dimensioning
+            CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+            CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY, 0));
+
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+
+            string TotalHt;
+
+            //mtext
+
+            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
+            else
+            {
+                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+            }
+
+
+            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
+
+            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
+            height = 6000;
+            length = 1000;
+            info[Defination.Sec_bot_l] = length;
+            info[Defination.Sec_bot_b] = height;
+
+            info[Defination.Sec_ht_bot] = info[Defination.Sec_ht_top] + height - 1000;
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b], 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b], 0), SecThick.VBoth);
+
+            //dimensioning
+            var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), botsec);
+
+
+
+
+            //lower sec top supp
+            height = 1000;
+            length = 4000;
+            extrainfo["Sec_low_b"] = height;
+            extrainfo["Sec_low_l"] = length;
+            extrainfo["Sec_low_l"] = length + 500;
+
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"], centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500, 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500, 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + 500, 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"], centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + 500, 0), SecThick.HBoth);
+
+            //prim of lower sec top supp
+            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - 500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + (1200 * 1.5), 1200);
+
+
+            height = 1000;
+            length = 3000;
+            info[Defination.Concrete_l] = length;
+            info[Defination.Concrete_b] = height;
+            //FixCreateSecondarySupportTop(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY);
+            FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, (centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l] + centerX + info[Defination.Sec_top_l] * 0.34) / 2, centerY, height, length, i);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Sec_ht_bot] - length, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Sec_ht_bot] - length, 0), MyCol.LightBlue);
+
+            //hori small dimen
+            var botsec2 = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
+
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), botsec2);
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction,AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
+
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
+
+            //support name and quantity
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i);
+
+            tracex += boxlen;
+
+
+        }
+
+
+        //enum for information
+        public enum Defination
+        {
+            Prim_Radius,
+            Prim_ht,
+            Sec_ht_top,
+            Sec_ht_bot,
+
+            Sec_top_l,
+            Sec_top_b,
+            Sec_bot_l,
+            Sec_bot_b,
+            Concrete_l,
+            Concrete_b
+
+        }
+
+        //for support name and quantity
+        public void CreateSupportName(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, int i)
+        {
+            //support name and quantity
+            double centerX = tracex + boxlen / 2;
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - 1500, spaceY - boxht + 700 + 1100, 0), new Point3d(centerX + 1500, spaceY - boxht + 700 + 1100, 0), new Point3d(centerX + 1500, spaceY - boxht + 700, 0), new Point3d(centerX - 1500, spaceY - boxht + 700, 0), SecThick.Nothing);
+
+            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - 1500 + 1000, spaceY - boxht + 700 + 1100 - 100, 0), ListCentalSuppoData[i].Name, 350);
+
+            //support quant
+            int quant = ListCentalSuppoData[i].Quantity;
+
+            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - 1500 + 800, spaceY - boxht + 700 + 1100 - 600, 0), "QTY. " + quant + " NOS.", 250);
+        }
+
         //enum for support identification
         public enum SupportType
         {
@@ -3709,13 +3971,12 @@ namespace Project1.Support2D
             Support3,
             Support4,
             Support5,
+            Support6,
 
             Elevation,
             S_Type,
             SL_Tyep,
             SR_Tyep,
-
-
 
         }
 
