@@ -2663,8 +2663,16 @@ namespace Project1.Support2D
                 dim.Dimasz = 150;
 
                 dim.Dimdec = 2;
+                try
+                {
+                    dim.DimensionText = Math.Round(Convert.ToDouble(topsec), 2).ToString();
+                }
+                catch (Exception)
+                {
+                    dim.DimensionText = topsec;
+                }
 
-                dim.DimensionText = topsec;
+
                 dim.Dimclre = Color.FromColor(System.Drawing.Color.Cyan);
                 dim.Dimclrt = Color.FromColor(System.Drawing.Color.Yellow);
                 dim.Dimclrd = Color.FromColor(System.Drawing.Color.Cyan);
@@ -2905,7 +2913,7 @@ namespace Project1.Support2D
 
             mtext.TextHeight = textheight == 0 ? 200 : textheight;
 
-            mtext.Color = color.IsEmpty ==true ? Color.FromColor(MyCol.Yellow) : Color.FromColor(color);
+            mtext.Color = color.IsEmpty == true ? Color.FromColor(MyCol.Yellow) : Color.FromColor(color);
 
             // Add the MText object to the drawing
             acadBlockTableRecord.AppendEntity(mtext);
@@ -3478,7 +3486,18 @@ namespace Project1.Support2D
 
             align.Dimtxt = 100;
             align.Dimasz = 150;
-            align.DimensionText = dimtxt;
+
+            //align.DimensionText = dimtxt;
+
+            try
+            {
+                align.DimensionText = Math.Round(Convert.ToDouble(dimtxt), 2).ToString();
+            }
+            catch (Exception)
+            {
+                align.DimensionText = dimtxt;
+            }
+
             align.Dimdec = 2;
             align.Dimclre = Color.FromColor(System.Drawing.Color.Cyan);
             align.Dimclrt = Color.FromColor(System.Drawing.Color.Yellow);
@@ -3703,8 +3722,8 @@ namespace Project1.Support2D
             //hori small dimen
             var botsec2 = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
 
-            var toppart = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor").First().EndPt ;
-            var anglepart = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection== "45Inclined").First().EndPt;
+            var toppart = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor").First().EndPt;
+            var anglepart = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "45Inclined").First().EndPt;
 
             botsec2 = (toppart[0] - anglepart[0]).ToString();
 
@@ -3923,8 +3942,8 @@ namespace Project1.Support2D
             BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth);
 
             //dimensioning
-            CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX-500, centerY + info[Defination.Prim_Radius], 0));
-            CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX-500, centerY + info[Defination.Prim_Radius], 0));
+            CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
+            CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
 
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
@@ -3961,7 +3980,7 @@ namespace Project1.Support2D
             //dimensioning
             var botsec = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
 
-            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - height * 0.66 + length, centerY - info[Defination.Sec_ht_top] - height, 0), botsec);
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b], 0), botsec);
 
 
             //lower sec top supp
@@ -3983,9 +4002,12 @@ namespace Project1.Support2D
             //prim of lower sec top supp
             FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - 500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + (1200 * 1.5), 1200);
 
+            //note nfo[prim.ht changes here
+
             //dimensioning
-            CreateDimension(pointsextrainfo["Sec_low_LT"], new Point3d(centerX - 500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + (1200 * 1.5)+1200, 0));
-            CreateDimension(pointsextrainfo["Sec_low_RT"], new Point3d(centerX - 500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + (1200 * 1.5) + 1200+1200, 0));
+            //CreateDimension(pointsextrainfo["Sec_low_LT"], new Point3d(centerX - 500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + (1200 * 1.5)+1200, 0));
+            CreateDimension(pointsextrainfo["Sec_low_LT"], new Point3d(centerX - 500, pointsextrainfo["Sec_low_LT"].Y + info[Defination.Prim_Radius], 0));
+            CreateDimension(pointsextrainfo["Sec_low_RT"], new Point3d(centerX - 500, pointsextrainfo["Sec_low_LT"].Y + info[Defination.Prim_Radius], 0));
 
 
             height = 1000;
