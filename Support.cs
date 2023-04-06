@@ -1917,22 +1917,18 @@ namespace Project1.Support2D
                 LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(1, 1, 0), new Point3d(50, 50, 0), MyCol.White);
 
 
-                ListDimStylesCommand();
-                CreateWipeoutBox();
+                for (int i = 0; i <= 5; i++)
+                {
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support2");
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support3");
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support4");
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support5");
 
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support2");
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support3");
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support4");
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support5");
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support6");
 
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support6");
-
-                CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support9");
-
-
-                ListDimStylesCommand();
-
-
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support7");
+                    CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support8");
+                }
 
                 //Point3d startPoint = new Point3d(0, 0, 0);
                 //Point3d endPoint = new Point3d(50, 50, 0);
@@ -1949,9 +1945,7 @@ namespace Project1.Support2D
 
 
 
-                //CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.Support3);
-                //CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.Support4);
-                //CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, SupportType.Support5);
+
 
 
 
@@ -2936,8 +2930,15 @@ namespace Project1.Support2D
             //{
             //    dim.DimensionText = (ListCentalSuppoData[0].ListConcreteData[1].BoxData.Z).ToString();
             //}
+            try
+            {
+                dim.DimensionText = Math.Max(ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z, ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z).ToString();
+            }
+            catch (Exception)
+            {
 
-            dim.DimensionText = Math.Max(ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z, ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z).ToString();
+            }
+           
 
             dim.Dimclre = Color.FromColor(System.Drawing.Color.Cyan);
             dim.Dimclrt = Color.FromColor(System.Drawing.Color.Yellow);
@@ -3107,15 +3108,22 @@ namespace Project1.Support2D
             acadTransaction.AddNewlyCreatedDBObject(dline, true);
 
             string TotalHt = "";
+            try
+            {
+                if (ListCentalSuppoData[0].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[0].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = (ListCentalSuppoData[0].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[1].BoxData.Z).ToString();
+                }
+                else
+                {
+                    TotalHt = (ListCentalSuppoData[0].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[1].BoxData.Z).ToString();
+                }
+            }
+            catch (Exception)
+            {
 
-            if (ListCentalSuppoData[0].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[0].ListConcreteData[1].BoxData.Z)
-            {
-                TotalHt = (ListCentalSuppoData[0].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[1].BoxData.Z).ToString();
             }
-            else
-            {
-                TotalHt = (ListCentalSuppoData[0].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[0].ListSecondrySuppo[1].BoxData.Z).ToString();
-            }
+
             //mtext
             CreateMtextfunc(acadBlockTableRecord, acadTransaction, acadDatabase, new Point3d(centerX + length / 2 + 1200, centerY - ht_frm_cen + 300, 0), "TOS EL.(+)100." + TotalHt /*info[Defination.Sec_ht].ToString()*/);
 
@@ -4158,26 +4166,34 @@ namespace Project1.Support2D
             pointsinfo[Defination.SecTopRB] = new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht] - height, 0);
             pointsinfo[Defination.SecTopLB] = new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0);
 
+            double leng = 0;
             //dimensioning
+            try
+            {
+                var ldist = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor").First().StPt;
 
-            var ldist = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor").First().StPt;
+                var endtp = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor").First().EndPt;
 
-            var endtp = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor").First().EndPt;
+                Vector3 segstr = new Vector3(Convert.ToSingle(ldist[0]), Convert.ToSingle(ldist[1]), Convert.ToSingle(ldist[2]));
 
-            Vector3 segstr = new Vector3(Convert.ToSingle(ldist[0]), Convert.ToSingle(ldist[1]), Convert.ToSingle(ldist[2]));
+                Vector3 segend = new Vector3(Convert.ToSingle(endtp[0]), Convert.ToSingle(endtp[1]), Convert.ToSingle(endtp[2]));
 
-            Vector3 segend = new Vector3(Convert.ToSingle(endtp[0]), Convert.ToSingle(endtp[1]), Convert.ToSingle(endtp[2]));
+                var destpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
 
-            var destpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
-
-            Vector3 destpoint = new Vector3(Convert.ToSingle(destpt.X), Convert.ToSingle(destpt.Y), Convert.ToSingle(destpt.Z));
+                Vector3 destpoint = new Vector3(Convert.ToSingle(destpt.X), Convert.ToSingle(destpt.Y), Convert.ToSingle(destpt.Z));
 
 
-            var point2 = FindPerpendicularFoot(destpoint, segstr, segend);
+                var point2 = FindPerpendicularFoot(destpoint, segstr, segend);
 
-            Point3d resu = new Point3d(point2.X, point2.Y, point2.Z);
+                Point3d resu = new Point3d(point2.X, point2.Y, point2.Z);
 
-            double leng = GetDist(new Point3d(ldist), resu);
+                 leng = GetDist(new Point3d(ldist), resu);
+            }
+            catch (Exception)
+            {
+                 
+            }
+            
 
             //double strtmiddist=GetDist(ldist)
 
@@ -4186,18 +4202,27 @@ namespace Project1.Support2D
 
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
-            string TotalHt;
 
+
+            string TotalHt = "";
             //mtext
+            try
+            {
+                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+                else
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+            }
+            catch (Exception)
+            {
 
-            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
             }
-            else
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-            }
+
+
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
 
@@ -4368,18 +4393,24 @@ namespace Project1.Support2D
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
 
-            string TotalHt;
-
+            string TotalHt = "";
             //mtext
+            try
+            {
+                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+                else
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+            }
+            catch (Exception)
+            {
 
-            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
             }
-            else
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-            }
+
 
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
@@ -4451,18 +4482,25 @@ namespace Project1.Support2D
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
-            string TotalHt;
+            string TotalHt = "";
 
             //mtext
+            try
+            {
+                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+                else
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+            }
+            catch (Exception)
+            {
 
-            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
             }
-            else
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-            }
+
 
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
@@ -4542,18 +4580,24 @@ namespace Project1.Support2D
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
-            string TotalHt;
-
+            string TotalHt = "";
             //mtext
+            try
+            {
+                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+                else
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+            }
+            catch (Exception)
+            {
 
-            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
             }
-            else
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-            }
+
 
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
@@ -4678,18 +4722,25 @@ namespace Project1.Support2D
 
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
-            string TotalHt;
 
+            string TotalHt = "";
             //mtext
+            try
+            {
+                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+                else
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+            }
+            catch (Exception)
+            {
 
-            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
             }
-            else
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-            }
+
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
 
@@ -4772,18 +4823,25 @@ namespace Project1.Support2D
 
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
-            string TotalHt;
+            string TotalHt = "";
 
             //mtext
+            try
+            {
+                if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+                else
+                {
+                    TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
+                }
+            }
+            catch (Exception)
+            {
 
-            if (ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z > ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z)
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
             }
-            else
-            {
-                TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
-            }
+
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
 
@@ -4862,7 +4920,7 @@ namespace Project1.Support2D
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
 
-            string TotalHt="";
+            string TotalHt = "";
 
             //mtext
             try
@@ -4876,12 +4934,12 @@ namespace Project1.Support2D
                     TotalHt = Math.Round((ListCentalSuppoData[i].ListConcreteData[1].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[0].BoxData.Z + ListCentalSuppoData[i].ListSecondrySuppo[1].BoxData.Z), 2).ToString();
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
 
-            
+
 
 
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)100." + TotalHt);
