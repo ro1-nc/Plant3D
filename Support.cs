@@ -671,13 +671,10 @@ namespace Project1.Support2D
         {
 
         }
-
         void GetPartsTochingZmaxconst(SupporSpecData PSuppoData, ref SupportData Data, List<SupporSpecData> ListSecondarySuppoData)
         {
 
         }
-
-
 
         void FillBoundingBox(Entity AcEnt, ref SupporSpecData SuppoSpecdata)
         {
@@ -882,16 +879,33 @@ namespace Project1.Support2D
                                             System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(CirDataS.AcadPlane.Normal.X, CirDataS.AcadPlane.Normal.Y, CirDataS.AcadPlane.Normal.Z);
                                             System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
 
+
+                                            //  System.Windows.Media.Media3D.Vector3D.
                                             double angle1 = System.Windows.Media.Media3D.Vector3D.AngleBetween(Vec1, Vec2);
                                             double angle2 = System.Windows.Media.Media3D.Vector3D.AngleBetween(Vec1, new System.Windows.Media.Media3D.Vector3D(0, 1, 0));
                                             double angle3 = System.Windows.Media.Media3D.Vector3D.AngleBetween(Vec1, new System.Windows.Media.Media3D.Vector3D(0, 0, 1));
 
+                                            double anglePto = System.Windows.Media.Media3D.Vector3D.DotProduct(Vec1, new System.Windows.Media.Media3D.Vector3D(0, 0, 1));
                                             //System.Windows.Media.Media3D.Vector3D Crossp = System.Windows.Media.Media3D.Vector3D.CrossProduct(Vec1, Vec2);
 
                                             SuppoSpecdata.Directionvec = DirVec;
                                             //  PlaneSurf.TransformBy
 
                                             SuppoSpecdata.DistCenter = GetDistanceCenterCirclefromBase(FaceLoc.AcadFace, CirDataS.Center);
+
+                                            Vec1.Normalize();
+
+                                            double X = Calculate.GetSignedRotation(Vec1, new System.Windows.Media.Media3D.Vector3D(1, 0, 0), new System.Windows.Media.Media3D.Vector3D(0, 0, 1));
+                                            double Y = Calculate.GetSignedRotation(Vec1, new System.Windows.Media.Media3D.Vector3D(0, 1, 0), new System.Windows.Media.Media3D.Vector3D(0, 0, 1));
+                                            double Z = Calculate.GetSignedRotation(Vec1, new System.Windows.Media.Media3D.Vector3D(0, 0, 1), new System.Windows.Media.Media3D.Vector3D(1, 0, 0));
+
+                                            SuppoSpecdata.FaceLocalAngle = new Angles();
+                                            SuppoSpecdata.FaceLocalAngle.XinRadian = X;
+                                            SuppoSpecdata.FaceLocalAngle.YinRadian = Y;
+                                            SuppoSpecdata.FaceLocalAngle.ZinRadian = Z;
+                                            SuppoSpecdata.FaceLocalAngle.XinDegree = Calculate.ConvertRadiansToDegrees(X);
+                                            SuppoSpecdata.FaceLocalAngle.YinDegree = Calculate.ConvertRadiansToDegrees(Y);
+                                            SuppoSpecdata.FaceLocalAngle.ZinDegree = Calculate.ConvertRadiansToDegrees(Z);
                                         }
                                     }
 
@@ -915,6 +929,8 @@ namespace Project1.Support2D
                 }
             }
         }
+
+
 
 
         double GetDistanceCenterCirclefromBase(Autodesk.AutoCAD.BoundaryRepresentation.Face AcadFace, Pt3D CenterCir)
@@ -1389,7 +1405,6 @@ namespace Project1.Support2D
             TypedValue[] SelFilterName = new TypedValue[1] { new TypedValue((int)DxfCode.LayerName, LayerName) };
             SelectionFilter SelFilter = new SelectionFilter(SelFilterName);
 
-
             SelectionRes = AcadEditor.SelectAll(SelFilter);
 
             //Getting Object ID of the each selected entiry
@@ -1425,7 +1440,7 @@ namespace Project1.Support2D
                             SuppoSpecdata.EndPt = Structureobj.EndPoint;
                             //  Structureobj.
                         }
-                        catch (Exception)
+                        catch (System.Exception)
                         {
                         }
 
@@ -1433,15 +1448,117 @@ namespace Project1.Support2D
 
                         ListSecondarySuppoData.Add(SuppoSpecdata);
                     }
+                    else if (AcEnt.GetType() == typeof(Solid3d))
+                    {
+                        SupporSpecData SuppoSpecdata = new SupporSpecData();
+                        Solid3d SLD = AcEnt as Solid3d;
+
+                        SuppoSpecdata.ListfaceData = GetFacesData(SLD);
+
+                        SuppoSpecdata.Centroid = GetPt3DFromPoint3D(SLD.MassProperties.Centroid);
+                        FillBoundingBox(AcEnt, ref SuppoSpecdata);
+                        FillDirVec(AcEnt, ref SuppoSpecdata);
+                        SuppoSpecdata.Volume = SLD.MassProperties.Volume;
+                        SuppoSpecdata.CalculateDist();
+                        SuppoSpecdata.SupportName = "PLATE";
+                        SuppoSpecdata.SuppoId = "S" + Count.ToString();
+
+
+                        ListSecondarySuppoData.Add(SuppoSpecdata);
+                    }
                     Count++;
                 }
-                catch (Exception Ex)
+                catch (System.Exception Ex)
                 {
-                    int indfx = 0;
                 }
             }
 
             return ListSecondarySuppoData;
+        }
+
+
+        List<Edgeinfo> GetAllEdgeInfo(Autodesk.AutoCAD.BoundaryRepresentation.Face AcadFace)
+        {
+            List<Edgeinfo> ListlinearEdge = new List<Edgeinfo>();
+            foreach (var Loop in AcadFace.Loops)
+            {
+                Edgeinfo EdgeData = new Edgeinfo();
+                if (Loop.LoopType == LoopType.LoopExterior)
+                {
+                    foreach (Edge AcadEdge in Loop.Edges)
+                    {
+                        ExternalCurve3d Curve = AcadEdge.Curve as ExternalCurve3d;
+
+                        if (Curve.IsLineSegment)
+                        {
+                            LineSegment3d LineSeg = Curve.NativeCurve as LineSegment3d;
+
+                            EdgeData.DirectionEdge = GetPt3DFromVecData(LineSeg.Direction);
+                            EdgeData.StPt = GetPt3DFromPoint3D(LineSeg.StartPoint);
+                            EdgeData.EndPt = GetPt3DFromPoint3D(LineSeg.EndPoint);
+                            EdgeData.MidPoint = GetPt3DFromPoint3D(LineSeg.MidPoint);
+                            EdgeData.EdgeLength = LineSeg.Length;
+
+                            ListlinearEdge.Add(EdgeData);
+                        }
+                    }
+                }
+            }
+
+            return ListlinearEdge;
+        }
+
+        List<FaceData> GetFacesData(Solid3d solid3D)
+        {
+            List<FaceData> AllFaceData = new List<FaceData>();
+            using (var Breps = new Autodesk.AutoCAD.BoundaryRepresentation.Brep(solid3D))
+            {
+                Autodesk.AutoCAD.BoundaryRepresentation.BrepFaceCollection FaceColl = Breps.Faces;
+
+                int Count = FaceColl.Count<Autodesk.AutoCAD.BoundaryRepresentation.Face>();
+
+                // Here we are getting the cuboidal bodies from which we can get diection of the Primary support so we are checking for Faces
+
+                foreach (var FacE in FaceColl)
+                {
+                    FaceData FaceLoc = new FaceData();
+
+                    FaceLoc.AcadFace = FacE;
+                    BoundBlock3d Block3d = FacE.BoundBlock;
+
+                    FaceLoc.SurfaceArea = FacE.GetSurfaceArea();
+
+                    ExternalBoundedSurface ExtBSurf = FacE.Surface as ExternalBoundedSurface;
+
+                    if (ExtBSurf != null)
+                    {
+                        if (ExtBSurf.IsPlane)
+                        {
+                            Plane PlaneSurf = ExtBSurf.BaseSurface as Plane;
+                            // CoordinateSystem3d CoSym = PlaneSurf.GetCoordinateSystem();
+                            GetDirectionFace(ref FaceLoc, PlaneSurf.GetCoordinateSystem());
+
+                            FaceLoc.ListlinearEdge = GetAllEdgeInfo(FaceLoc.AcadFace);
+
+                        }
+                    }
+
+                    AllFaceData.Add(FaceLoc);
+                }
+            }
+
+            return AllFaceData;
+        }
+
+        void GetDirectionFace(ref FaceData FaceLoc, CoordinateSystem3d CoSym)
+        {
+            DirectionVec DirVec = new DirectionVec();
+            DirVec.XDirVec = GetPt3DFromVecData(CoSym.Xaxis);
+            DirVec.YDirVec = GetPt3DFromVecData(CoSym.Yaxis);
+            DirVec.ZDirVec = GetPt3DFromVecData(CoSym.Zaxis);
+
+            FaceLoc.Directionvecface = DirVec;
+            FaceLoc.AngleData = GetRotationFromVec(DirVec);
         }
 
         List<SupporSpecData> GetAllConcreteSupportData(Editor AcadEditor, Transaction AcadTransaction, string LayerName)
@@ -1603,9 +1720,14 @@ namespace Project1.Support2D
 
                             if (SupData.ListPrimarySuppo[0].SupportName.Contains("GRP FLG"))
                             {
-                                if (Math.Round(Math.Abs(SupData.ListPrimarySuppo[0].Angle.XinDegree)).Equals((SupData.ListSecondrySuppo.Find(x => x.Size != null && x.Size.ToUpper().Contains("SLOPING CHANNEL")).Angle.XinDegree)) && Math.Round(Math.Abs((SupData.ListPrimarySuppo[0].Angle.ZinDegree) - (SupData.ListSecondrySuppo.Find(x => x.Size != null && x.Size.ToUpper().Contains("SLOPING CHANNEL")).Angle.ZinDegree))).Equals(90))
+                                if (Math.Round(Math.Abs(SupData.ListPrimarySuppo[0].FaceLocalAngle.XinDegree - ((SupData.ListSecondrySuppo.Find(x => x.Size != null && x.Size.ToUpper().Contains("SLOPING CHANNEL")).Angle.ZinDegree)))).Equals(180) && Math.Round(Math.Abs((SupData.ListPrimarySuppo[0].FaceLocalAngle.ZinDegree) - (SupData.ListSecondrySuppo.Find(x => x.Size != null && x.Size.ToUpper().Contains("SLOPING CHANNEL")).Angle.YinDegree))).Equals(90))
                                 {
                                     SupData.SupportType = "Support10";
+                                    return true;
+                                }
+                                else if (Math.Round(Math.Abs(SupData.ListPrimarySuppo[0].FaceLocalAngle.XinDegree)).Equals((SupData.ListSecondrySuppo.Find(x => x.Size != null && x.Size.ToUpper().Contains("SLOPING CHANNEL")).Angle.ZinDegree)) && Math.Round(Math.Abs((SupData.ListPrimarySuppo[0].FaceLocalAngle.ZinDegree) - (SupData.ListSecondrySuppo.Find(x => x.Size != null && x.Size.ToUpper().Contains("SLOPING CHANNEL")).Angle.YinDegree))).Equals(90))
+                                {
+                                    SupData.SupportType = "Support13";
                                     return true;
                                 }
                             }
@@ -2096,11 +2218,11 @@ namespace Project1.Support2D
             //Creates 2D View
             Create2DViewWithTemp(Document2D);
             //Create2DView(Document2D);
-            Database newDb = AcadDatabase.Wblock();
+             Database newDb = AcadDatabase.Wblock();
             string Path = System.IO.Path.GetDirectoryName(Filename);
 
-            newDb.SaveAs(Path + "2d.dwg", DwgVersion.Current);
-            Document2D.CloseAndSave(Path + "2d.dwg");
+             newDb.SaveAs(Path + "2d.dwg", DwgVersion.Current);
+             Document2D.CloseAndSave(Path + "2d.dwg");
         }
 
         void Create2DView(Document Document2D)
@@ -2165,7 +2287,9 @@ namespace Project1.Support2D
                 SupportData firstSupport = ListCentalSuppoData.FirstOrDefault();
 
                 // gets the template
-                CopyPasteTemplateFile("Temp1", Document2D, 0);
+               // CopyPasteTemplateFile("Temp1", Document2D, 0);
+
+                CopyAndModifyEntities(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Temp1", 0, 0, 1);
 
                 //GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,0);
 
@@ -3053,7 +3177,7 @@ namespace Project1.Support2D
 
             else
             {
-                GenericCase(AcadBlockTableRecord, AcadTransaction, AcadDatabase, i);
+                //GenericCase(AcadBlockTableRecord, AcadTransaction, AcadDatabase, i);
             }
 
 
@@ -3245,7 +3369,7 @@ namespace Project1.Support2D
                 Vector3d destvect = strpt.GetVectorTo(new Point3d(insertptX, insertptY, 0));
 
                 var ent = (Entity)tr2.GetObject(id, OpenMode.ForWrite);
-                var ent2 = (Entity)tr2.GetObject(id, OpenMode.ForRead);
+                // var ent2 = (Entity)tr2.GetObject(id, OpenMode.ForRead);
 
                 Matrix3d scaleMatrix = Matrix3d.Scaling(scaleFactor, new Point3d(0, 0, 0));
 
@@ -3272,8 +3396,6 @@ namespace Project1.Support2D
 
         public void CopyAndModifyEntities(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, string sourceDwg, double insertptX, double insertptY, double scaleFactor)
         {
-            // Open the destination database in write mode
-
 
             string workingDirectory = Directory.GetCurrentDirectory();
 
@@ -3323,12 +3445,10 @@ namespace Project1.Support2D
 
                 sourceEntity.TransformBy(Matrix3d.Displacement(destvect));
 
-
                 // For example
 
                 // Add the modified entity to the destination database
                 Entity destEntity = sourceEntity.Clone() as Entity;
-
 
                 //AcadBlockTableRecord.AppendEntity(destEntity);
                 //tr2.AddNewlyCreatedDBObject(destEntity, true);
@@ -4790,12 +4910,26 @@ namespace Project1.Support2D
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex, spaceY - boxht + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
 
+            if (ListCentalSuppoData[i].ListPrimarySuppo[0].SupportName.Contains("NB"))
+            {
+                FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
+                //height of prim from bottom
+                CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Prim_Radius] + 1500, centerY - 100, 0), "CL.EL.(+)100." + info[Defination.Prim_ht].ToString());
 
-            FixCreatePrimarySupportwithvertex(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, 801.5625);
+            }
 
-            //height of prim from bottom
+            if (ListCentalSuppoData[i].ListPrimarySuppo[0].SupportName.Contains("Clamp"))
+            {
+                double radius = 500;
+                info[Defination.Prim_Radius] = radius;
+                info[Defination.Prim_ht] = radius;
 
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Prim_Radius] + 1500, centerY - 100, 0), "CL.EL.(+)100." + info[Defination.Prim_ht].ToString());
+                CopyAndModifyEntities(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Prim_block_U", centerX, centerY, radius);
+                //height of prim from bottom
+                CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Prim_Radius] - 1500, centerY - 100, 0), "CL.EL.(+)100." + info[Defination.Prim_ht].ToString());
+            }
+
+
 
             double height = 1000;
             double length = 3000;
@@ -4820,12 +4954,13 @@ namespace Project1.Support2D
 
                 var endpt = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.PartDirection == "Hor").First().EndPt;
 
-                var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
+                // var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
+                var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Centroid;
 
                 Point3d projectedpt = FindPerpendicularFoot(midpt, strpt, endpt);
 
-                l_dist_frm_centre = GetDist(new Point3d(strpt), projectedpt);
-                r_dist_frm_centre = GetDist(new Point3d(endpt), projectedpt);
+                l_dist_frm_centre = Math.Round(GetDist(new Point3d(strpt), projectedpt));
+                r_dist_frm_centre = Math.Round(GetDist(new Point3d(endpt), projectedpt));
             }
             catch (Exception)
             {
@@ -4889,7 +5024,12 @@ namespace Project1.Support2D
             info[Defination.Concrete_l] = length;
             info[Defination.Concrete_b] = height;
 
-            FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length, i);
+            if (ListCentalSuppoData[i].ListConcreteData.Count > 0)
+            {
+                FixCreateBottomSupportTopType2(Document2D, AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX, centerY, height, length, i);
+
+            }
+
 
 
             //support name and quantity
@@ -5893,7 +6033,7 @@ namespace Project1.Support2D
 
             //var lengthY = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => (e.PartDirection == "Hor") && (e.Boundingboxmax.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.Boundingboxmax.Z))).First().BoxData.Y;
 
-           //var length = Math.Max(lengthX, lengthY);
+            //var length = Math.Max(lengthX, lengthY);
 
             BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(strpt[0], strpt[2] + height / 2, 0), new Point3d(strpt[0] + length, strpt[2] + height / 2, 0), new Point3d(strpt[0] + length, strpt[2] - height / 2, 0), new Point3d(strpt[0] - length, strpt[2] - height / 2, 0), SecThick.HBoth, "R");
 
