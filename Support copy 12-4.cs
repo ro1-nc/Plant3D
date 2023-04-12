@@ -7698,7 +7698,6 @@ namespace Project1.Support2D
 
             }
 
-
             //right side down secondary support
             height = 1000;
             length = 5000;
