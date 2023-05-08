@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Windows.Media.Media3D;
 
 using MyCol = System.Drawing.Color;
 using Autodesk.AutoCAD.BoundaryRepresentation;
@@ -110,17 +111,41 @@ namespace Project1.Support2D
 
                                 if (LayersName[0] != null && LayersName[0].Length > 0)
                                 {
-                                    ListPSuppoData = GetAllPrimarySupportData(AcadEditor, AcadTransaction, LayersName[0]);
+                                    try
+                                    {
+                                        ListPSuppoData = GetAllPrimarySupportData(AcadEditor, AcadTransaction, LayersName[0]);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        ListPSuppoData = new List<SupporSpecData>();
+                                    }
                                 }
 
                                 if (LayersName[1] != null && LayersName[1].Length > 0)
                                 {
-                                    ListSecondarySuppoData = GetAllSecondarySupportData(AcadEditor, AcadTransaction, LayersName[1]);
+                                    try
+                                    {
+                                        ListSecondarySuppoData = GetAllSecondarySupportData(AcadEditor, AcadTransaction, LayersName[1]);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        ListSecondarySuppoData = new List<SupporSpecData>();
+                                    }
                                 }
 
                                 if (LayersName[2] != null && LayersName[2].Length > 0)
                                 {
-                                    ListConcreteSupportData = GetAllConcreteSupportData(AcadEditor, AcadTransaction, LayersName[2]);
+                                    try
+                                    {
+                                        ListConcreteSupportData = GetAllConcreteSupportData(AcadEditor, AcadTransaction, LayersName[2]);
+                                    }
+                                    catch (Exception)
+                                    {
+
+                                        ListConcreteSupportData = new List<SupporSpecData>();
+
+                                    }
+
                                 }
 
                                 Dictionary<string, Point3d> DicTextPos = new Dictionary<string, Point3d>();
@@ -272,16 +297,32 @@ namespace Project1.Support2D
                 else*/
                 if (id.ObjectClass.DxfName.ToUpper().Contains("TEXT"))
                 {
-
-
-                    MText mtext = (MText)AcadTransaction.GetObject(id, OpenMode.ForWrite);
-
-                    Extents3d? Ext3d = mtext.Bounds;
-
-
-                    if ((Math.Round(MinPoint.X) < Math.Round(Ext3d.Value.MinPoint.X) && Math.Round(Ext3d.Value.MinPoint.X) <= Math.Round(MaxPoint.X) && Math.Round(MinPoint.Y) <= Math.Round(Ext3d.Value.MinPoint.Y) && Math.Round(Ext3d.Value.MinPoint.Y) <= Math.Round(MaxPoint.Y) && Math.Round(MinPoint.Z) <= Math.Round(Ext3d.Value.MinPoint.Z) && Math.Round(Ext3d.Value.MinPoint.Z) <= Math.Round(MaxPoint.Z)) || (Math.Round(MaxPoint.X) <= Math.Round(Ext3d.Value.MinPoint.X) && Math.Round(Ext3d.Value.MinPoint.X) <= Math.Round(MinPoint.X) && Math.Round(MaxPoint.Y) <= Math.Round(Ext3d.Value.MinPoint.Y) && Math.Round(Ext3d.Value.MinPoint.Y) <= Math.Round(MinPoint.Y) && Math.Round(MaxPoint.Z) <= Math.Round(Ext3d.Value.MinPoint.Z) && Math.Round(Ext3d.Value.MinPoint.Z) <= Math.Round(MinPoint.Z)))
+                    try
                     {
-                        return mtext.Text;
+                        MText mtext = (MText)AcadTransaction.GetObject(id, OpenMode.ForWrite);
+
+                        Extents3d? Ext3d = mtext.Bounds;
+
+
+                        if ((Math.Round(MinPoint.X) < Math.Round(Ext3d.Value.MinPoint.X) && Math.Round(Ext3d.Value.MinPoint.X) <= Math.Round(MaxPoint.X) && Math.Round(MinPoint.Y) <= Math.Round(Ext3d.Value.MinPoint.Y) && Math.Round(Ext3d.Value.MinPoint.Y) <= Math.Round(MaxPoint.Y) && Math.Round(MinPoint.Z) <= Math.Round(Ext3d.Value.MinPoint.Z) && Math.Round(Ext3d.Value.MinPoint.Z) <= Math.Round(MaxPoint.Z)) || (Math.Round(MaxPoint.X) <= Math.Round(Ext3d.Value.MinPoint.X) && Math.Round(Ext3d.Value.MinPoint.X) <= Math.Round(MinPoint.X) && Math.Round(MaxPoint.Y) <= Math.Round(Ext3d.Value.MinPoint.Y) && Math.Round(Ext3d.Value.MinPoint.Y) <= Math.Round(MinPoint.Y) && Math.Round(MaxPoint.Z) <= Math.Round(Ext3d.Value.MinPoint.Z) && Math.Round(Ext3d.Value.MinPoint.Z) <= Math.Round(MinPoint.Z)))
+                        {
+                            return mtext.Text;
+                        }
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            DBText text = (DBText)AcadTransaction.GetObject(id, OpenMode.ForRead);
+
+                            if ((Math.Round(MinPoint.X) < Math.Round(text.Position.X) && Math.Round(text.Position.X) <= Math.Round(MaxPoint.X) && Math.Round(MinPoint.Y) <= Math.Round(text.Position.Y) && Math.Round(text.Position.Y) <= Math.Round(MaxPoint.Y) && Math.Round(MinPoint.Z) <= Math.Round(text.Position.Z) && Math.Round(text.Position.Z) <= Math.Round(MaxPoint.Z)) || (Math.Round(MaxPoint.X) <= Math.Round(text.Position.X) && Math.Round(text.Position.X) <= Math.Round(MinPoint.X) && Math.Round(MaxPoint.Y) <= Math.Round(text.Position.Y) && Math.Round(text.Position.Y) <= Math.Round(MinPoint.Y) && Math.Round(MaxPoint.Z) <= Math.Round(text.Position.Z) && Math.Round(text.Position.Z) <= Math.Round(MinPoint.Z)))
+                            {
+                                return text.TextString;
+                            }
+                        }
+                        catch
+                        {
+                        }
                     }
                 }
 
@@ -335,16 +376,233 @@ namespace Project1.Support2D
                 GetllTouchingParts(TempSuppoData, ref ListSuppoData, ref ListProcessedDataIds, ListAllSuppoData);
 
                 SeparateAndFillSupport(ref ListSuppoData, ref RawSupportData, Text, AcadTransaction, AcadBlockTable);
+            }
 
+            foreach (SupporSpecData PSuppoData in ListSecondarySuppoData)
+            {
+                SupportData SupData = new SupportData();
+                List<SupporSpecData> ListSuppoData = new List<SupporSpecData>();
+
+
+                string Text = ""; //GetTextInsidetheBBOx(AcadTransaction, AcadBlockTable, PSuppoData.Boundingboxmin, PSuppoData.Boundingboxmax);
+
+                //if (RawSupportData.Exists(x => x.Name.Equals(Text)))
+                //{
+                //    RawSupportData.Find(x => x.Name.Equals(Text)).Quantity++;
+
+                //  continue;
+                // }
+
+                if (ListProcessedDataIds != null && ListProcessedDataIds.Count > 0 && ListProcessedDataIds.Contains(PSuppoData.SuppoId))
+                {
+                    continue;
+                }
+
+                /*  GetAllTouchingSecondarySupport(PSuppoData, ref ListSuppoData, ref ListProcessedDataIds, ListSecondarySuppoData);
+
+                  SupporSpecData TempSuppoData = new SupporSpecData();
+                  //Temporary Adding this  need to Modify This
+                  foreach (SupporSpecData Sup in ListSuppoData)
+                  {
+                      if (Sup.SuppoId.Contains("S"))
+                      {
+                          TempSuppoData = Sup;
+                      }
+                  }*/
+
+
+                GetllTouchingParts(PSuppoData, ref ListSuppoData, ref ListProcessedDataIds, ListAllSuppoData);
+
+                SeparateAndFillSupport(ref ListSuppoData, ref RawSupportData, Text, AcadTransaction, AcadBlockTable);
             }
         }
 
+        void GetAllTouchingPart(ref List<SupporSpecData> RawSupportData)
+        {
+            foreach (SupporSpecData SSupportData in RawSupportData)
+            {
+                List<string> ListTouchingParts = new List<string>();
+
+                if (SSupportData.SuppoId == null)
+                {
+                    continue;
+                }
+
+                foreach (SupporSpecData SupData in RawSupportData)
+                {
+                    if (SupData.SuppoId == null || SupData.SuppoId == SSupportData.SuppoId)
+                    {
+                        continue;
+                    }
+
+                    bool IsXRange = false;
+                    bool IsYRange = false;
+                    bool IsZRange = false;
+
+                    if (Math.Round(SSupportData.Boundingboxmin.X) <= Math.Round(SupData.Boundingboxmin.X) && Math.Round(SupData.Boundingboxmax.X) <= Math.Round(SSupportData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.X) <= Math.Round(SupData.Boundingboxmin.X) && Math.Round(SupData.Boundingboxmin.X) <= Math.Round(SSupportData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.X) <= Math.Round(SupData.Boundingboxmax.X) && Math.Round(SupData.Boundingboxmax.X) <= Math.Round(SSupportData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+                    else if (Math.Round(SupData.Boundingboxmin.X) <= Math.Round(SSupportData.Boundingboxmin.X) && Math.Round(SSupportData.Boundingboxmax.X) <= Math.Round(SupData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+
+
+                    if (Math.Round(SSupportData.Boundingboxmin.Y) <= Math.Round(SupData.Boundingboxmin.Y) && Math.Round(SupData.Boundingboxmax.Y) <= Math.Round(SSupportData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Y) <= Math.Round(SupData.Boundingboxmin.Y) && Math.Round(SupData.Boundingboxmin.Y) <= Math.Round(SSupportData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Y) <= Math.Round(SupData.Boundingboxmax.Y) && Math.Round(SupData.Boundingboxmax.Y) <= Math.Round(SSupportData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+                    else if (Math.Round(SupData.Boundingboxmin.Y) <= Math.Round(SSupportData.Boundingboxmin.Y) && Math.Round(SSupportData.Boundingboxmax.Y) <= Math.Round(SupData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+
+
+
+                    if (Math.Round(SSupportData.Boundingboxmin.Z) <= Math.Round(SupData.Boundingboxmin.Z) && Math.Round(SupData.Boundingboxmax.Z) <= Math.Round(SSupportData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Z) <= Math.Round(SupData.Boundingboxmin.Z) && Math.Round(SupData.Boundingboxmin.Z) <= Math.Round(SSupportData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Z) <= Math.Round(SupData.Boundingboxmax.Z) && Math.Round(SupData.Boundingboxmax.Z) <= Math.Round(SSupportData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+                    else if (Math.Round(SupData.Boundingboxmin.Z) <= Math.Round(SSupportData.Boundingboxmin.Z) && Math.Round(SSupportData.Boundingboxmax.Z) <= Math.Round(SupData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+
+                    if (IsXRange && IsYRange && IsZRange)
+                    {
+                        ListTouchingParts.Add(SupData.SuppoId);
+                    }
+                }
+
+                SSupportData.ListtouchingParts = ListTouchingParts;
+            }
+        }
+        void CheckforGussetPlate(ref SupportData RawSupportData)
+        {
+            foreach (SupporSpecData SSupportData in RawSupportData.ListSecondrySuppo)
+            {
+                if (SSupportData.SupportName == null)
+                {
+                    continue;
+                }
+
+                if (!SSupportData.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    continue;
+                }
+                foreach (SupporSpecData SupData in RawSupportData.ListConcreteData)
+                {
+                    bool IsXRange = false;
+                    bool IsYRange = false;
+                    bool IsZRange = false;
+
+                    if (Math.Round(SSupportData.Boundingboxmin.X) <= Math.Round(SupData.Boundingboxmin.X) && Math.Round(SupData.Boundingboxmax.X) <= Math.Round(SSupportData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.X) <= Math.Round(SupData.Boundingboxmin.X) && Math.Round(SupData.Boundingboxmin.X) <= Math.Round(SSupportData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.X) <= Math.Round(SupData.Boundingboxmax.X) && Math.Round(SupData.Boundingboxmax.X) <= Math.Round(SSupportData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+                    else if (Math.Round(SupData.Boundingboxmin.X) <= Math.Round(SSupportData.Boundingboxmin.X) && Math.Round(SSupportData.Boundingboxmax.X) <= Math.Round(SupData.Boundingboxmax.X))
+                    {
+                        IsXRange = true;
+                    }
+
+
+                    if (Math.Round(SSupportData.Boundingboxmin.Y) <= Math.Round(SupData.Boundingboxmin.Y) && Math.Round(SupData.Boundingboxmax.Y) <= Math.Round(SSupportData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Y) <= Math.Round(SupData.Boundingboxmin.Y) && Math.Round(SupData.Boundingboxmin.Y) <= Math.Round(SSupportData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Y) <= Math.Round(SupData.Boundingboxmax.Y) && Math.Round(SupData.Boundingboxmax.Y) <= Math.Round(SSupportData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+                    else if (Math.Round(SupData.Boundingboxmin.Y) <= Math.Round(SSupportData.Boundingboxmin.Y) && Math.Round(SSupportData.Boundingboxmax.Y) <= Math.Round(SupData.Boundingboxmax.Y))
+                    {
+                        IsYRange = true;
+                    }
+
+
+
+                    if (Math.Round(SSupportData.Boundingboxmin.Z) <= Math.Round(SupData.Boundingboxmin.Z) && Math.Round(SupData.Boundingboxmax.Z) <= Math.Round(SSupportData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Z) <= Math.Round(SupData.Boundingboxmin.Z) && Math.Round(SupData.Boundingboxmin.Z) <= Math.Round(SSupportData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+                    else if (Math.Round(SSupportData.Boundingboxmin.Z) <= Math.Round(SupData.Boundingboxmax.Z) && Math.Round(SupData.Boundingboxmax.Z) <= Math.Round(SSupportData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+                    else if (Math.Round(SupData.Boundingboxmin.Z) <= Math.Round(SSupportData.Boundingboxmin.Z) && Math.Round(SSupportData.Boundingboxmax.Z) <= Math.Round(SupData.Boundingboxmax.Z))
+                    {
+                        IsZRange = true;
+                    }
+
+                    if (IsXRange && IsYRange && IsZRange)
+                    {
+                        if (SupData.SuppoId != null && SupData.SuppoId.ToUpper().Contains("S") && SSupportData.SuppoId != null && SSupportData.SuppoId.ToUpper().Contains("C"))
+                        {
+                            if (SupData.SupportName.ToUpper().Equals("PLATE"))
+                            {
+                                SupData.IsGussetplate = true;
+                            }
+                        }
+                        else if (SupData.SuppoId != null && SupData.SuppoId.ToUpper().Contains("C") && SSupportData.SuppoId != null && SSupportData.SuppoId.ToUpper().Contains("S"))
+                        {
+                            if (SSupportData.SupportName.ToUpper().Equals("PLATE"))
+                            {
+                                SSupportData.IsGussetplate = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         void SeparateAndFillSupport(ref List<SupporSpecData> ListSuppoData, ref List<SupportData> RawSupportData, string Name, Transaction AcadTransaction, BlockTable AcadBlockTable)
         {
             SupportData FullSuppo = new SupportData();
             List<SupporSpecData> ListPSuppoData = new List<SupporSpecData>();
             List<SupporSpecData> ListSecondarySuppoData = new List<SupporSpecData>();
             List<SupporSpecData> ListConcreteSupportData = new List<SupporSpecData>();
+
+            GetAllTouchingPart(ref ListSuppoData);
             foreach (SupporSpecData SupData in ListSuppoData)
             {
                 if (SupData.SuppoId.Contains("P"))
@@ -373,6 +631,8 @@ namespace Project1.Support2D
             FullSuppo.Name = Name;
             FullSuppo.Quantity++;
 
+
+            CheckforGussetPlate(ref FullSuppo);
             RawSupportData.Add(FullSuppo);
         }
 
@@ -490,6 +750,21 @@ namespace Project1.Support2D
                     ListTouchingSuppo.Add(SSupportData);
                     ListSuppoData.Add(SSupportData);
 
+                    //if (SupData.SuppoId != null && SupData.SuppoId.ToUpper().Contains("S") && SSupportData.SuppoId != null && SSupportData.SuppoId.ToUpper().Contains("C"))
+                    //{
+                    //    if (SupData.SupportName.ToUpper().Equals("PLATE"))
+                    //    {
+                    //        SupData.IsGussetplate = true;
+                    //    }
+                    //}
+                    //else if (SupData.SuppoId != null && SupData.SuppoId.ToUpper().Contains("C") && SSupportData.SuppoId != null && SSupportData.SuppoId.ToUpper().Contains("S"))
+                    //{
+                    //    if (SSupportData.SupportName.ToUpper().Equals("PLATE"))
+                    //    {
+                    //        SSupportData.IsGussetplate = true;
+                    //    }
+                    //}
+
                     if (SupData.SuppoId.ToUpper().Contains("P"))
                     {
                         SupData.TouchingPartid = SSupportData.SuppoId;
@@ -535,6 +810,10 @@ namespace Project1.Support2D
 
         void ModifyBoundigBox(ref SupporSpecData PSuppoData)
         {
+            if (PSuppoData.BottomPrim == null)
+            {
+                return;
+            }
             if (Calculate.DistPoint(PSuppoData.Boundingboxmin, PSuppoData.BottomPrim) > Calculate.DistPoint(PSuppoData.Boundingboxmax, PSuppoData.BottomPrim))
             {
                 PSuppoData.Boundingboxmax = new Pt3D(PSuppoData.BottomPrim);
@@ -550,7 +829,13 @@ namespace Project1.Support2D
 
             if (PSuppoData.IsSupportNB)
             {
-                ModifyBoundigBox(ref PSuppoData);
+                try
+                {
+                    ModifyBoundigBox(ref PSuppoData);
+                }
+                catch (Exception)
+                {
+                }
             }
 
             foreach (SupporSpecData SSupportData in ListSecondarySuppoData)
@@ -717,6 +1002,22 @@ namespace Project1.Support2D
                     SSupportData.TouchingPartid = PRSuppoData.SuppoId;
                     ListPartsRange.Add(SSupportData);
 
+                    //if (PRSuppoData.SuppoId != null && PRSuppoData.SuppoId.ToUpper().Contains("S") && SSupportData.SuppoId != null && SSupportData.SuppoId.ToUpper().Contains("C"))
+                    //{
+                    //    if (PRSuppoData.SupportName.ToUpper().Equals("PLATE"))
+                    //    {
+                    //        PRSuppoData.IsGussetplate = true;
+                    //    }
+                    //}
+                    //else if (PRSuppoData.SuppoId != null && PRSuppoData.SuppoId.ToUpper().Contains("C") && SSupportData.SuppoId != null && SSupportData.SuppoId.ToUpper().Contains("S"))
+                    //{
+                    //    if (SSupportData.SupportName.ToUpper().Equals("PLATE"))
+                    //    {
+                    //        SSupportData.IsGussetplate = true;
+                    //    }
+                    //}
+
+
                     if (!ListProcessedDataIds.Contains(SSupportData.SuppoId))
                     {
                         ListProcessedDataIds.Add(SSupportData.SuppoId);
@@ -838,7 +1139,6 @@ namespace Project1.Support2D
                     }
                 }
             }
-
             return LayersName;
         }
         List<SupporSpecData> GetAllPrimarySupportData(Editor AcadEditor, Transaction AcadTransaction, string LayerName)
@@ -906,7 +1206,7 @@ namespace Project1.Support2D
                         {
                             SuppoSpecdata.SupportName = Obj.PartFamilyLongDesc;
                             string Tag = Obj.LineNumberTag;
-                            string Siz = Obj.Size;
+                            SuppoSpecdata.Size = Obj.Size;
                         }
 
                         Autodesk.ProcessPower.PnP3dObjects.PartSizeProperties PartProp = Suppo.PartSizeProperties;
@@ -1338,7 +1638,6 @@ namespace Project1.Support2D
                 }
             }
 
-
             //recent change
             SuppoSpecdata.Midpoint = GetSmallerMidPt(FaceDataToProcess);
 
@@ -1703,6 +2002,44 @@ namespace Project1.Support2D
             return ListlinearEdge;
         }
 
+        void CheckforAnchorPlate(Solid3d solid3D, ref SupporSpecData Support)
+        {
+            int count = 0;
+            List<FaceData> AllFaceData = new List<FaceData>();
+            using (var Breps = new Autodesk.AutoCAD.BoundaryRepresentation.Brep(solid3D))
+            {
+                Autodesk.AutoCAD.BoundaryRepresentation.BrepFaceCollection FaceColl = Breps.Faces;
+
+                int Count = FaceColl.Count<Autodesk.AutoCAD.BoundaryRepresentation.Face>();
+
+                // Here we are getting the cuboidal bodies from which we can get diection of the Primary support so we are checking for Faces
+
+                foreach (var FacE in FaceColl)
+                {
+                    FaceData FaceLoc = new FaceData();
+
+                    FaceLoc.AcadFace = FacE;
+                    BoundBlock3d Block3d = FacE.BoundBlock;
+
+                    FaceLoc.SurfaceArea = FacE.GetSurfaceArea();
+
+                    ExternalBoundedSurface ExtBSurf = FacE.Surface as ExternalBoundedSurface;
+
+                    if (ExtBSurf != null)
+                    {
+                        // ExtBSurf.Is
+                        if (ExtBSurf.IsCylinder)
+                        {
+                            Support.IsAnchor = true;
+                            count++;
+                        }
+                    }
+                }
+            }
+
+            Support.NoOfAnchoreHole = count;
+        }
+
         List<FaceData> GetFacesData(Solid3d solid3D)
         {
             List<FaceData> AllFaceData = new List<FaceData>();
@@ -1781,6 +2118,9 @@ namespace Project1.Support2D
                     {
                         SupporSpecData SuppoSpecdata = new SupporSpecData();
                         Solid3d SLD = AcEnt as Solid3d;
+
+                        CheckforAnchorPlate(SLD, ref SuppoSpecdata);
+                        SuppoSpecdata.ListfaceData = GetFacesData(SLD);
                         Pt3D Cntrd = new Pt3D();
                         Cntrd.X = Math.Abs(SLD.MassProperties.Centroid[0]);
                         Cntrd.Y = Math.Abs(SLD.MassProperties.Centroid[1]);
@@ -1876,20 +2216,61 @@ namespace Project1.Support2D
             ProcessDicDataToGetType(SupportData);
         }
 
+        int GetAngleCount(SupportData SuppData)
+        {
+            int AngleCount = 0;
+            foreach (var Spart in SuppData.ListSecondrySuppo)
+            {
+                if (Spart.Size != null && (Spart.Size.ToUpper().Contains("ANGLE") || Spart.Size.ToUpper().Contains("L-") || Spart.Size.ToUpper().Contains("ISA")) && !(Spart.Size.ToUpper().Contains("WEB")))
+                {
+                    AngleCount++;
+                }
+            }
+            return AngleCount;
+        }
+
         void ProcessDicDataToGetType(SupportData SupportData)
         {
             int CSupportCount = SupportData.ListConcreteData.Count;
             int PSupportCount = SupportData.ListPrimarySuppo.Count;
             int SSupportCount = SupportData.ListSecondrySuppo.Count;
 
-
             if (CSupportCount == 0 && PSupportCount == 1 && SSupportCount == 0)
             {
                 SupportData.SupportType = "Support13";
             }
+            else if (CSupportCount == 0 && PSupportCount == 0 && SSupportCount == 1)
+            {
+                if (GetAllISMC(SupportData).Count == 1)
+                {
+                    SupportData.SupportType = "Support57";
+                }
+            }
+            else if (CSupportCount == 0 && PSupportCount == 0 && SSupportCount == 2)
+            {
+                CheckforTypeSupport54(ref SupportData);
+            }
+            else if (CSupportCount == 1 && PSupportCount == 0 && SSupportCount == 1)
+            {
+                CheckforTypeSupport58(ref SupportData);
+
+            }
+            else if (CSupportCount == 3 && PSupportCount == 0 && SSupportCount == 2)
+            {
+                CheckforTypeSupport60(ref SupportData);
+            }
             else if (CSupportCount == 0 && PSupportCount == 1 && SSupportCount == 1)
             {
-                CheckforTypeSupport14(ref SupportData);
+                if (!CheckforTypeSupport14(ref SupportData))
+                {
+                    if (SupportData.ListSecondrySuppo[0].Size != null)
+                    {
+                        if ((SupportData.ListSecondrySuppo[0].Size.ToUpper().Contains("ANGLE") || SupportData.ListSecondrySuppo[0].Size.ToUpper().Contains("L-")) && !(SupportData.ListSecondrySuppo[0].Size.ToUpper().Contains("WEB")))
+                        {
+                            CheckforTypeSupport35(ref SupportData);
+                        }
+                    }
+                }
             }
             else if (CSupportCount == 1 && PSupportCount == 1 && SSupportCount == 1)
             {
@@ -1910,8 +2291,21 @@ namespace Project1.Support2D
 
                                 }
                             }
+                            /*else if (SupportData.ListSecondrySuppo.Any(x => x.Size.ToUpper().Contains("L-")))
+                            {
+                               // CheckforTypeSupport36()
+                            }*/
+
                         }
                     }
+                }
+            }
+            else if (CSupportCount == 0 && PSupportCount == 1 && SSupportCount == 3)
+            {
+                int NoofAngles = GetAngleCount(SupportData);
+                if (NoofAngles == 3)
+                {
+                    CheckforTypeSupport38(ref SupportData);
                 }
             }
             else if (CSupportCount == 1 && PSupportCount == 1 && SSupportCount == 2)
@@ -1930,6 +2324,20 @@ namespace Project1.Support2D
                     }
                 }
             }
+            else if (CSupportCount == 2 && PSupportCount == 0 && SSupportCount == 6 || CSupportCount == 2 && PSupportCount == 0 && SSupportCount == 2 || CSupportCount == 1 && PSupportCount == 0 && SSupportCount == 2)
+            {
+                if (GetGussetCout(ref SupportData) == 4)
+                {
+                    if (!CheckforTypeSupport50(ref SupportData))
+                    {
+                        CheckforTypeSupport64(ref SupportData);
+                    }
+                }
+                if (GetGussetCout(ref SupportData) == 0)
+                {
+                    CheckforTypeSupport50(ref SupportData);
+                }
+            }
             else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 2)
             {
                 if (!CheckforTypeSupport2(ref SupportData))
@@ -1946,22 +2354,12 @@ namespace Project1.Support2D
                     }
                 }
             }
+            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 4)
+            {
+                if (GetGussetCout(ref SupportData) == 2)
+                    CheckforTypeSupport34(ref SupportData);
+            }
             else if (CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 3)
-            {
-                if (!CheckforTypeSupport22(ref SupportData))
-                {
-                    CheckforTypeSupport6(ref SupportData);
-                }
-            }
-            else if (CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 2)
-            {
-                CheckforTypeSupport7(ref SupportData);
-            }
-            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 3)
-            {
-                CheckforTypeSupport31(ref SupportData);
-            }
-            else if (CSupportCount == 1 && PSupportCount == 2 && SSupportCount == 3)
             {
                 if (!CheckforTypeSupport22(ref SupportData))
                 {
@@ -1971,11 +2369,44 @@ namespace Project1.Support2D
                     }
                 }
             }
+            else if (CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 4)
+            {
+                CheckforTypeSupport43(ref SupportData);
+            }
+            else if (CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 2)
+            {
+                CheckforTypeSupport7(ref SupportData);
+            }
+            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 3 || CSupportCount == 1 && PSupportCount == 0 && SSupportCount == 3)
+            {
+                if (!CheckforTypeSupport31(ref SupportData))
+                {
+                    CheckforTypeSupport64(ref SupportData);
+                }
+            }
+            else if (CSupportCount == 1 && PSupportCount == 0 && SSupportCount == 4)
+            {
+                CheckforTypeSupport64(ref SupportData);
+            }
+            else if (CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 3)
+            {
+
+            }
+            else if (CSupportCount == 1 && PSupportCount == 2 && SSupportCount == 3)
+            {
+                if (!CheckforTypeSupport22(ref SupportData))
+                {
+                    if (!CheckforTypeSupport6(ref SupportData))
+                    {
+
+                    }
+                }
+            }
             else if (CSupportCount == 2 && PSupportCount == 3 && SSupportCount == 4)
             {
-                if (CheckforTypeSupport32(ref SupportData))
+                if (!CheckforTypeSupport32(ref SupportData))
                 {
-
+                    CheckforTypeSupport36(ref SupportData);
                 }
             }
             else if (CSupportCount == 1 && PSupportCount == 2 && SSupportCount == 2)
@@ -1984,9 +2415,20 @@ namespace Project1.Support2D
             }
             else if (CSupportCount == 1 && PSupportCount == 2 && SSupportCount == 4)
             {
-                if (SupportData.ListSecondrySuppo.Exists(x => x.Size.Contains("Angle")))
+                try
                 {
-                    CheckforTypeSupport20(ref SupportData);
+                    if (Checkforangle(ref SupportData))
+                    {
+                        CheckforTypeSupport20(ref SupportData);
+                    }
+                    else
+                    {
+                        CheckforTypeSupport41(ref SupportData);
+                    }
+
+                }
+                catch (Exception)
+                {
                 }
             }
             else if (CSupportCount == 1 && PSupportCount == 3 && SSupportCount == 4)
@@ -1998,7 +2440,7 @@ namespace Project1.Support2D
             {
                 CheckforTypeSupport19(ref SupportData);
             }
-            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 7)
+            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 7 || CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 7)
             {
                 if (HasWord(SupportData.ListSecondrySuppo, "NB"))
                 {
@@ -2006,6 +2448,37 @@ namespace Project1.Support2D
                     //CheckforTypeSupport28(ref SupportData);
                     //Need to Add Check for Primary Sup
                     CheckforTypeSupport25(ref SupportData);
+                }
+            }
+
+            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 7 || CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 7 || CSupportCount == 2 && PSupportCount == 4 && SSupportCount == 7)
+            {
+                if (HasWord(SupportData.ListSecondrySuppo, "NB"))
+                {
+
+                    //CheckforTypeSupport28(ref SupportData);
+                    //Need to Add Check for Primary Sup
+                    CheckforTypeSupport25(ref SupportData);
+                }
+            }
+            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 8)
+            {
+                if (HasWord(SupportData.ListSecondrySuppo, "NB"))
+                {
+                    if (GetAngleCount(SupportData) == 1)
+                    {
+                        CheckforTypeSupport29(ref SupportData);
+                    }
+                }
+            }
+            else if (CSupportCount == 2 && PSupportCount == 1 && SSupportCount == 9)
+            {
+                if (HasWord(SupportData.ListSecondrySuppo, "NB"))
+                {
+                    if (GetAngleCount(SupportData) == 2)
+                    {
+                        CheckforTypeSupport48(ref SupportData);
+                    }
                 }
             }
             else if (CSupportCount == 2 && PSupportCount == 2 && SSupportCount == 8)
@@ -2016,11 +2489,858 @@ namespace Project1.Support2D
                     CheckforTypeSupport27(ref SupportData);
                 }
             }
+            else if (CSupportCount == 2 && PSupportCount == 3 && SSupportCount == 11)
+            {
+                if (HasWord(SupportData.ListSecondrySuppo, "NB"))
+                {
+                    if (GetAngleCount(SupportData) == 2)
+                    {
+                        CheckforTypeSupport47(ref SupportData);
+                    }
+                }
+            }
+            else if (CSupportCount == 2 && PSupportCount == 3 && SSupportCount == 10)
+            {
+                if (HasWord(SupportData.ListSecondrySuppo, "NB"))
+                {
+                    if (GetAngleCount(SupportData) == 1)
+                    {
+                        CheckforTypeSupport49(ref SupportData);
+                    }
+                }
+            }
+            else if (CSupportCount == 2 && PSupportCount == 0 && SSupportCount == 8)
+            {
+
+            }
         }
 
+        bool CheckforTypeSupport36(ref SupportData SupData)
+        {
+            Dictionary<int, SupporSpecData> DicIndexData = new Dictionary<int, SupporSpecData>();
+
+            DicIndexData = GetAllISMC(SupData);
+
+            List<SupporSpecData> ListIsmc = new List<SupporSpecData>();
+            List<SupporSpecData> ListEmpty = new List<SupporSpecData>();
+            foreach (var Part in DicIndexData)
+            {
+                ListIsmc.Add(Part.Value);
+            }
+            List<string> ListParSup = new List<string>();
+            List<List<string>> CombinedParSupp = new List<List<string>>();
+
+            ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+            Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+            DicMidistPt = CheckforMidDist(SupData);
+
+            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+            DicDistConSup = GetminDistFromConcrete(SupData);
+
+            string Id = GetMinDistFromDic(DicDistConSup);
+
+            string VerPartId = "";
+            foreach (var Part in CombinedParSupp)
+            {
+                if (Part.Count == 1)
+                {
+                    if (Part[0] == Id)
+                    {
+                        VerPartId = Id;
+                        break;
+                    }
+                }
+            }
+
+            if (VerPartId.Length < 1)
+            {
+                return false;
+            }
+
+            Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+            List<Vector3D> ListVecData = new List<Vector3D>();
+
+            DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+            double maxValue = 0;
+            string MaxValueID = "";
+
+            foreach (var DicData in DicDistConSup)
+            {
+                if (DicData.Value > maxValue)
+                {
+                    maxValue = DicData.Value;
+                    MaxValueID = DicData.Key;
+                }
+            }
+
+            if ((GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Boundingboxmax.Z) <= (GetPartbyId(MaxValueID, SupData.ListSecondrySuppo).Boundingboxmax.Z))
+            {
+                if ((DicMidistPt == null || DicMidistPt.Count == 1) && CheckVectorsArePlaner(ListVecData))
+                {
+                    int Pos90Count = 0;
+                    int Nev90Count = 0;
+                    List<string> PosId = new List<string>();
+                    List<string> NevId = new List<string>();
+
+                    foreach (var data in DicAngleData)
+                    {
+                        if (DicMidistPt.ElementAt(0).Key == data.Key)
+                        {
+                            continue;
+                        }
+                        if (Math.Round(data.Value.Angle).Equals(90))
+                        {
+                            Pos90Count++;
+                            PosId.Add(data.Key);
+                        }
+                        else if (Math.Round(data.Value.Angle).Equals(-90))
+                        {
+                            Nev90Count++;
+                            NevId.Add(data.Key);
+                        }
+                    }
+
+                    int HorAngleCount = 0;
+                    if (Pos90Count == 2)
+                    {
+                        foreach (var SData in SupData.ListSecondrySuppo)
+                        {
+                            if (SData.SuppoId != null && PosId.Contains(SData.SuppoId))
+                            {
+                                if (Math.Abs(Math.Round(SData.Angle.XinDegree)).Equals(90))
+                                {
+                                    SData.PartDirection = "Hor";
+                                    HorAngleCount++;
+                                }
+                            }
+                            else if (SData.SuppoId != null && SData.SuppoId.Equals(VerPartId))
+                            {
+                                SData.PartDirection = "Ver";
+                            }
+                            else if (SData.SuppoId != null && NevId.Contains(SData.SuppoId))
+                            {
+                                if (Math.Abs(Math.Round(SData.Angle.XinDegree)).Equals(90))
+                                {
+                                    SData.PartDirection = "Hor";
+                                    HorAngleCount++;
+                                }
+                            }
+                            else if (SData.SuppoId != null && DicMidistPt.ElementAt(0).Key.Equals(SData.SuppoId))
+                            {
+                                SData.PartDirection = "Hor";
+                                HorAngleCount++;
+                            }
+                        }
+
+                        if (HorAngleCount == 3)
+                        {
+                            SupData.SupportType = "Support36";
+
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool CheckforTypeSupport64(ref SupportData SupData)
+        {
+            Dictionary<int, SupporSpecData> DicIndexData = new Dictionary<int, SupporSpecData>();
+
+            DicIndexData = GetAllISMC(SupData);
+
+            List<SupporSpecData> ListIsmc = new List<SupporSpecData>();
+            List<SupporSpecData> ListEmpty = new List<SupporSpecData>();
+            foreach (var Part in DicIndexData)
+            {
+                ListIsmc.Add(Part.Value);
+            }
+            List<string> ListParSup = new List<string>();
+            List<List<string>> CombinedParSupp = new List<List<string>>();
+
+            ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+            Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+            DicMidistPt = CheckforMidDist(SupData);
+
+            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+            DicDistConSup = GetminDistFromConcrete(SupData);
+
+            string Id = GetMinDistFromDic(DicDistConSup);
+
+            string VerPartId = "";
+            foreach (var Part in CombinedParSupp)
+            {
+                if (Part.Count == 1)
+                {
+                    if (Part[0] == Id)
+                    {
+                        VerPartId = Id;
+                        break;
+                    }
+                }
+            }
+
+            if (VerPartId.Length < 1)
+            {
+                return false;
+            }
+
+            Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+            List<Vector3D> ListVecData = new List<Vector3D>();
+
+            DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+            double maxValue = 0;
+            string MaxValueID = "";
+
+            foreach (var DicData in DicDistConSup)
+            {
+                if (DicData.Value > maxValue)
+                {
+                    maxValue = DicData.Value;
+                    MaxValueID = DicData.Key;
+                }
+            }
+
+            if ((GetPartbyId(MaxValueID, SupData.ListSecondrySuppo).Boundingboxmax.Z) <= (GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Boundingboxmax.Z))
+            {
+                if ((DicMidistPt == null || DicMidistPt.Count == 0) && CheckVectorsArePlaner(ListVecData))
+                {
+                    int Pos90Count = 0;
+                    int Nev90Count = 0;
+                    List<string> PosId = new List<string>();
+                    List<string> NevId = new List<string>();
+
+                    foreach (var data in DicAngleData)
+                    {
+                        if (Math.Round(data.Value.Angle).Equals(90))
+                        {
+                            Pos90Count++;
+                            PosId.Add(data.Key);
+                        }
+                        else if (Math.Round(data.Value.Angle).Equals(-90))
+                        {
+                            Nev90Count++;
+                            NevId.Add(data.Key);
+                        }
+                    }
+
+                    int HorAngleCount = 0;
+                    if (Pos90Count == 2 || Nev90Count == 2 || Pos90Count == 3 || (Pos90Count == 2 && Nev90Count == 1) || Pos90Count == 1)
+                    {
+                        foreach (var SData in SupData.ListSecondrySuppo)
+                        {
+                            if (SData.SuppoId != null && PosId.Contains(SData.SuppoId))
+                            {
+                                if (Math.Abs(Math.Round(SData.Angle.XinDegree)).Equals(90))
+                                {
+                                    SData.PartDirection = "Hor";
+                                    HorAngleCount++;
+                                }
+                            }
+                            else if (SData.SuppoId != null && SData.SuppoId.Equals(VerPartId))
+                            {
+                                SData.PartDirection = "Ver";
+                            }
+                            else if (SData.SuppoId != null && NevId.Contains(SData.SuppoId))
+                            {
+                                if (Math.Abs(Math.Round(SData.Angle.XinDegree)).Equals(90))
+                                {
+                                    SData.PartDirection = "Hor";
+                                    HorAngleCount++;
+                                }
+                            }
+                        }
+
+                        if (Pos90Count == 2 && Nev90Count == 1 && ListIsmc.Count == 4 && HorAngleCount == 3)
+                        {
+                            SupData.SupportType = "Support66";
+                            return true;
+                        }
+                        else if (Pos90Count == 2 && Nev90Count == 1 && ListIsmc.Count == 4 && HorAngleCount == 3)
+                        {
+                            SupData.SupportType = "Support67";
+                            return true;
+                        }
+                        else if (Pos90Count == 3 && ListIsmc.Count == 4 && HorAngleCount == 3)
+                        {
+                            SupData.SupportType = "Support65";
+                            return true;
+                        }
+                        /* else if (Nev90Count == 3 && ListIsmc.Count == 4)
+                         {
+                             SupData.SupportType = "Support69";
+                             return true;
+                         }*/
+                        if (Nev90Count == 2 && ListIsmc.Count == 3 && HorAngleCount == 2)
+                        {
+                            SupData.SupportType = "Support63";
+                            return true;
+                        }
+                        else if (Pos90Count == 2 && ListIsmc.Count == 3 && HorAngleCount == 2)
+                        {
+                            SupData.SupportType = "Support64";
+                            return true;
+                        }
+                        else if (Pos90Count == 1 && ListIsmc.Count == 2 && HorAngleCount == 1)
+                        {
+                            SupData.SupportType = "Support69";
+                            return true;
+                        }
+
+                    }
+
+                }
+            }
+
+            return false;
+        }
+        bool CheckforTypeSupport60(ref SupportData SupData)
+        {
+            if (GetConcretePlateCount(ref SupData).Equals(3))
+            {
+                Dictionary<int, SupporSpecData> DicIndexData = new Dictionary<int, SupporSpecData>();
+
+                DicIndexData = GetAllISMC(SupData);
+
+                List<SupporSpecData> ListIsmc = new List<SupporSpecData>();
+                List<SupporSpecData> ListEmpty = new List<SupporSpecData>();
+                foreach (var Part in DicIndexData)
+                {
+                    ListIsmc.Add(Part.Value);
+                }
+
+                if (ListIsmc.Count == 2)
+                {
+                    if (Math.Abs(Math.Round(SupData.ListSecondrySuppo[0].Angle.XinDegree)).Equals(90) && (Math.Abs(Math.Round(SupData.ListSecondrySuppo[1].Angle.XinDegree))).Equals(45) || (Math.Abs(Math.Round(SupData.ListSecondrySuppo[1].Angle.XinDegree)).Equals(135)))
+                    {
+                        int CplateCount = 0;
+                        if (SupData.ListSecondrySuppo[0].ListtouchingParts.Count == 3)
+                        {
+                            foreach (string Id in SupData.ListSecondrySuppo[0].ListtouchingParts)
+                            {
+                                if (Id.ToUpper().Contains("C"))
+                                {
+                                    CplateCount++;
+                                }
+                            }
+                        }
+                        if (CplateCount == 2 && Math.Round(SupData.ListSecondrySuppo[0].Angle.ZinDegree).Equals(Math.Round(SupData.ListSecondrySuppo[1].Angle.ZinDegree)))
+                        {
+                            SupData.SupportType = "Support60";
+                            return true;
+                        }
+                        if (CplateCount == 2 && Math.Abs(Math.Round(SupData.ListSecondrySuppo[0].Angle.ZinDegree - SupData.ListSecondrySuppo[1].Angle.ZinDegree)).Equals(180))
+                        {
+                            SupData.SupportType = "Support61";
+                            return true;
+                        }
+                    }
+                    else if (Math.Abs(Math.Round(SupData.ListSecondrySuppo[1].Angle.XinDegree)).Equals(90) && (Math.Abs(Math.Round(SupData.ListSecondrySuppo[0].Angle.XinDegree))).Equals(45) || (Math.Abs(Math.Round(SupData.ListSecondrySuppo[0].Angle.XinDegree)).Equals(135)))
+                    {
+                        int CplateCount = 0;
+                        if (SupData.ListSecondrySuppo[1].ListtouchingParts.Count == 3)
+                        {
+                            foreach (string Id in SupData.ListSecondrySuppo[1].ListtouchingParts)
+                            {
+                                if (Id.ToUpper().Contains("C"))
+                                {
+                                    CplateCount++;
+                                }
+                            }
+                        }
+                        if (CplateCount == 2 && Math.Round(SupData.ListSecondrySuppo[0].Angle.ZinDegree).Equals(Math.Round(SupData.ListSecondrySuppo[1].Angle.ZinDegree)))
+                        {
+                            SupData.SupportType = "Support60";
+                            return true;
+                        }
+                        if (CplateCount == 2 && Math.Abs(Math.Round(SupData.ListSecondrySuppo[0].Angle.ZinDegree - SupData.ListSecondrySuppo[1].Angle.ZinDegree)).Equals(180))
+                        {
+                            SupData.SupportType = "Support61";
+                            return true;
+                        }
+                    }
+
+                }
+            }
+
+            return false;
+        }
+
+        int GetConcretePlateCount(ref SupportData SupData)
+        {
+            int Platecount = 0;
+
+            foreach (var SSuppo in SupData.ListConcreteData)
+            {
+                if (SSuppo != null && SSuppo.SupportName != null && SSuppo.SupportName.ToLower().Equals("plate"))
+                {
+                    Platecount++;
+                }
+            }
+            return Platecount;
+        }
+
+        bool CheckforTypeSupport58(ref SupportData SupData)
+        {
+            if (SupData.ListConcreteData[0] != null && SupData.ListConcreteData[0].SupportName != null && SupData.ListConcreteData[0].SupportName.ToLower().Equals("plate") && GetAllISMC(SupData).Count == 1)
+            {
+                SupData.SupportType = "Support58";
+                return true;
+            }
+            else if (GetAllISMC(SupData).Count == 1 && Math.Abs(Math.Round(GetAllISMC(SupData)[0].Angle.XinDegree)).Equals(90))
+            {
+                SupData.SupportType = "Support59";
+                return true;
+            }
+            return false;
+        }
+
+        bool CheckforTypeSupport54(ref SupportData SupData)
+        {
+            Dictionary<int, SupporSpecData> DicIndexData = new Dictionary<int, SupporSpecData>();
+
+            DicIndexData = GetAllISMC(SupData);
+
+            List<SupporSpecData> ListIsmc = new List<SupporSpecData>();
+            List<SupporSpecData> ListEmpty = new List<SupporSpecData>();
+            foreach (var Part in DicIndexData)
+            {
+                ListIsmc.Add(Part.Value);
+            }
+
+            string Orientation = "";
+
+            if (CheckCentroidInLine(GetDicCentroidBottomPart(SupData), GetDicCentroidPrimaryPart(SupData), GetCentroidFromList(ListIsmc), ref Orientation))
+            {
+
+                if (ListIsmc.Count == 2)
+                {
+                    int MaxHorIndex = 0;
+                    int MinVerIndex = 0;
+                    if (ListIsmc[0].Centroid.Z > ListIsmc[1].Centroid.Z)
+                    {
+                        MaxHorIndex = 0;
+                        MinVerIndex = 1;
+                    }
+                    else
+                    {
+                        MaxHorIndex = 1;
+                        MinVerIndex = 0;
+                    }
+
+                    if (Math.Round(ListIsmc[MaxHorIndex].Angle.ZinDegree).Equals(Math.Round(ListIsmc[MinVerIndex].Angle.ZinDegree)) && Math.Abs(Math.Round(ListIsmc[MaxHorIndex].Angle.XinDegree)).Equals(90) &&
+                        Math.Abs(Math.Round(ListIsmc[MaxHorIndex].Angle.XinDegree - ListIsmc[MinVerIndex].Angle.ZinDegree)).Equals(90))
+                    {
+                        GetPartbyId(ListIsmc[MaxHorIndex].SuppoId, SupData.ListSecondrySuppo).PartDirection = "Hor";
+                        GetPartbyId(ListIsmc[MaxHorIndex].SuppoId, SupData.ListSecondrySuppo).PartDirection = "Ver";
+                        SupData.SupportType = "Support54";
+                        return true;
+                    }
+
+                }
+            }
+            else
+            {
+                if (ListIsmc.Count == 2)
+                {
+                    int MaxHorIndex = 0;
+                    int MinVerIndex = 0;
+                    if (ListIsmc[0].Centroid.Z > ListIsmc[1].Centroid.Z)
+                    {
+                        MaxHorIndex = 0;
+                        MinVerIndex = 1;
+                    }
+                    else
+                    {
+                        MaxHorIndex = 1;
+                        MinVerIndex = 0;
+                    }
+
+                    if (Math.Round(ListIsmc[MaxHorIndex].Angle.ZinDegree).Equals(Math.Round(ListIsmc[MinVerIndex].Angle.ZinDegree)) && Math.Abs(Math.Round(ListIsmc[MaxHorIndex].Angle.XinDegree)).Equals(90) &&
+                        Math.Abs(Math.Round(ListIsmc[MaxHorIndex].Angle.XinDegree - ListIsmc[MinVerIndex].Angle.ZinDegree)).Equals(90))
+                    {
+                        double Dist1 = 0;
+                        double Dist2 = 0;
+
+                        if (ListIsmc[MaxHorIndex].StPt != null && ListIsmc[MinVerIndex].StPt != null && ListIsmc[MinVerIndex].EndPt != null)
+                        {
+
+                            Dist1 = Calculate.DistPoint(GetPt3DFromArray(ListIsmc[MaxHorIndex].StPt), GetPt3DFromArray(ListIsmc[MinVerIndex].StPt));
+
+                            Dist2 = Calculate.DistPoint(GetPt3DFromArray(ListIsmc[MaxHorIndex].StPt), GetPt3DFromArray(ListIsmc[MinVerIndex].EndPt));
+
+
+                            if (Dist1 != Dist2)
+                            {
+                                Vector3D Vec1 = GetVector(GetPt3DFromArray(ListIsmc[MinVerIndex].StPt), GetPt3DFromArray(ListIsmc[MinVerIndex].EndPt));
+
+                                Vector3D Vec2 = GetVector(GetPt3DFromArray(ListIsmc[MaxHorIndex].StPt), GetPt3DFromArray(ListIsmc[MinVerIndex].EndPt));
+
+                                Vector3D Vec3 = new Vector3D(0, 0, 1);
+
+                                Vector3D Vec5 = GetVector(GetPt3DFromArray(ListIsmc[MaxHorIndex].EndPt), GetPt3DFromArray(ListIsmc[MinVerIndex].EndPt));
+
+                                double RotationAngle1 = Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3));
+
+                                double RotationAngle2 = Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec5, Vec3));
+
+                                if (RotationAngle1 < 0 && RotationAngle2 > 0 && Math.Abs(RotationAngle1) > Math.Abs(RotationAngle2))
+                                {
+                                    GetPartbyId(ListIsmc[MaxHorIndex].SuppoId, SupData.ListSecondrySuppo).PartDirection = "Hor";
+                                    GetPartbyId(ListIsmc[MinVerIndex].SuppoId, SupData.ListSecondrySuppo).PartDirection = "Ver";
+                                    SupData.SupportType = "Support55";
+                                    return true;
+                                }
+                                else if (RotationAngle1 < 0 && RotationAngle2 > 0 && Math.Abs(RotationAngle1) < Math.Abs(RotationAngle2))
+                                {
+
+                                    GetPartbyId(ListIsmc[MaxHorIndex].SuppoId, SupData.ListSecondrySuppo).PartDirection = "Hor";
+                                    GetPartbyId(ListIsmc[MinVerIndex].SuppoId, SupData.ListSecondrySuppo).PartDirection = "Ver";
+                                    SupData.SupportType = "Support56";
+                                    return true;
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+            }
+            return false;
+        }
+        bool CheckforTypeSupport50(ref SupportData SupData)
+        {
+            Dictionary<int, SupporSpecData> DicIndexData = new Dictionary<int, SupporSpecData>();
+
+            DicIndexData = GetAllISMC(SupData);
+
+            List<SupporSpecData> ListIsmc = new List<SupporSpecData>();
+            List<SupporSpecData> ListEmpty = new List<SupporSpecData>();
+            foreach (var Part in DicIndexData)
+            {
+                ListIsmc.Add(Part.Value);
+            }
+
+            string Orientation = "";
+
+            if (CheckCentroidInLine(GetDicCentroidBottomPart(SupData), GetDicCentroidPrimaryPart(SupData), GetCentroidFromList(ListIsmc), ref Orientation))
+            {
+                List<string> ListParSup = new List<string>();
+                List<List<string>> CombinedParSupp = new List<List<string>>();
+
+                ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+                Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+                DicMidistPt = CheckforMidDist(SupData);
+
+                Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+                DicDistConSup = GetminDistFromConcrete(SupData);
+
+                string Id = GetMinDistFromDic(DicDistConSup);
+
+                string VerPartId = "";
+                foreach (var Part in CombinedParSupp)
+                {
+                    if (Part.Count == 1)
+                    {
+                        if (Part[0] == Id)
+                        {
+                            VerPartId = Id;
+                            break;
+                        }
+                    }
+                }
+
+                if (VerPartId.Length < 1)
+                {
+                    return false;
+                }
+
+                if (CombinedParSupp.Count == 2 && DicMidistPt.Count == 1 && GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo) != null && GetPartbyId(VerPartId, SupData.ListSecondrySuppo) != null && Math.Abs(Math.Round(GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Angle.XinDegree)).Equals(90)
+                  && Math.Round(GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Angle.ZinDegree).Equals(Math.Round(GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Angle.ZinDegree)) &&
+                  GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Boundingboxmax.Z < GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Boundingboxmax.Z)
+                {
+                    GetPartbyId(VerPartId, SupData.ListSecondrySuppo).PartDirection = "Ver";
+
+                    GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).PartDirection = "Hor";
+
+                    SupData.SupportType = "Support50";
+                    return true;
+
+                }
+                if (CombinedParSupp.Count == 2 && DicMidistPt.Count == 1 && GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo) != null && GetPartbyId(VerPartId, SupData.ListSecondrySuppo) != null && Math.Abs(Math.Round(GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Angle.XinDegree)).Equals(90)
+                  && Math.Abs(Math.Round(GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Angle.ZinDegree - GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Angle.ZinDegree)).Equals(180) &&
+                  GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Boundingboxmax.Z < GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Boundingboxmax.Z)
+                {
+                    GetPartbyId(VerPartId, SupData.ListSecondrySuppo).PartDirection = "Ver";
+
+                    GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).PartDirection = "Hor";
+
+                    SupData.SupportType = "Support68";
+                    return true;
+
+                }
+                else if (CombinedParSupp.Count == 2 && DicMidistPt.Count == 1 && GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo) != null && GetPartbyId(VerPartId, SupData.ListSecondrySuppo) != null && Math.Abs(Math.Round(GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Angle.XinDegree)).Equals(90)
+                  && Math.Round(GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Angle.ZinDegree).Equals(Math.Round(GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Angle.ZinDegree)) && Math.Round(
+                  GetPartbyId(VerPartId, SupData.ListSecondrySuppo).Boundingboxmax.Z).Equals(Math.Round(GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).Boundingboxmax.Z)))
+                {
+                    GetPartbyId(VerPartId, SupData.ListSecondrySuppo).PartDirection = "Ver";
+
+                    GetPartbyId(DicMidistPt.ElementAt(0).Key, SupData.ListSecondrySuppo).PartDirection = "Hor";
+
+                    SupData.SupportType = "Support51";
+                    return true;
+                }
+                else if (SupData.ListPrimarySuppo.Count == 1 && CheckCentroidInLine(GetCentroidFromList(ListEmpty), GetDicCentroidPrimaryPart(SupData), GetCentroidFromList(ListIsmc), ref Orientation))
+                {
+
+
+                }
+
+            }
+            return false;
+
+        }
+
+        SupporSpecData GetPartbyId(string Id, List<SupporSpecData> ListSuppo)
+        {
+            foreach (var Suppo in ListSuppo)
+            {
+                if (Id.Equals(Suppo.SuppoId))
+                {
+                    return Suppo;
+                }
+            }
+
+            return null;
+        }
+
+        List<Pt3D> GetCentroidFromList(List<SupporSpecData> SData)
+        {
+            List<Pt3D> Centroids = new List<Pt3D>();
+            if (SData.Count > 0)
+            {
+                foreach (var Part in SData)
+                {
+                    Centroids.Add(Part.Centroid);
+                }
+                return Centroids;
+            }
+
+            return null;
+        }
+        Dictionary<int, SupporSpecData> GetAllISMC(SupportData SupData)
+        {
+            Dictionary<int, SupporSpecData> DicIdndexIsmc = new Dictionary<int, SupporSpecData>();
+
+            for (int inx = 0; inx < SupData.ListSecondrySuppo.Count; inx++)
+            {
+                if (SupData.ListSecondrySuppo[inx] != null && SupData.ListSecondrySuppo[inx].Size != null && SupData.ListSecondrySuppo[inx].SupportName != null && SupData.ListSecondrySuppo[inx].SupportName.ToLower().Contains("web") || SupData.ListSecondrySuppo[inx].Size.ToLower().Contains("web"))
+                {
+                    DicIdndexIsmc[inx] = SupData.ListSecondrySuppo[inx];
+                }
+            }
+            return DicIdndexIsmc;
+        }
+        bool CheckforTypeSupport49(ref SupportData SupData)
+        {
+            int plateCount = 0;
+            SupporSpecData NBPart = new SupporSpecData();
+            List<SupporSpecData> ChannelC = new List<SupporSpecData>();
+
+            List<SupporSpecData> AngleData = new List<SupporSpecData>();
+
+            foreach (var Data in SupData.ListSecondrySuppo)
+            {
+                if (Data.SupportName != null && Data.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    plateCount++;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("NB"))
+                {
+                    NBPart = Data;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("ISMC"))
+                {
+                    ChannelC.Add(Data);
+                }
+                else if (Data.Size != null && (Data.Size.ToUpper().Contains("L-") || Data.Size.ToUpper().Contains("ANGLE") || Data.Size.ToUpper().Contains("ISA")) && (!Data.Size.ToUpper().Contains("WEB")))
+                {
+                    AngleData.Add(Data);
+                }
+            }
+
+            if (plateCount == 5 && NBPart != null && ChannelC != null && ChannelC.Count == 3 && AngleData != null && AngleData.Count == 1)
+            {
+                if (Math.Round(Math.Abs(ChannelC[0].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(ChannelC[1].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(ChannelC[2].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(AngleData[0].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90))
+                {
+                    List<string> ListParSup = new List<string>();
+                    List<List<string>> CombinedParSupp = new List<List<string>>();
+
+                    ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+                    Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+                    DicMidistPt = CheckforMidDist(SupData);
+
+                    Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+                    DicDistConSup = GetminDistFromConcrete(SupData);
+
+                    string Id = GetMinDistFromDic(DicDistConSup);
+
+                    string VerPartId = "";
+                    foreach (var Part in CombinedParSupp)
+                    {
+                        if (Part.Count == 1)
+                        {
+                            if (Part[0] == Id)
+                            {
+                                VerPartId = Id;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (VerPartId.Length < 1)
+                    {
+                        return false;
+                    }
+
+                    Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+                    List<Vector3D> ListVecData = new List<Vector3D>();
+
+                    DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+                    if (Math.Round(DicAngleData[AngleData[0].SuppoId].Angle).Equals(-90) && Math.Round(DicAngleData[ChannelC[0].SuppoId].Angle).Equals(90) && Math.Round(DicAngleData[ChannelC[1].SuppoId].Angle).Equals(90) && Math.Round(DicAngleData[ChannelC[2].SuppoId].Angle).Equals(90))
+                    {
+                        if (DicAngleData[AngleData[0].SuppoId].Mindist > DicAngleData[ChannelC[0].SuppoId].Mindist && DicAngleData[AngleData[0].SuppoId].Mindist > DicAngleData[ChannelC[1].SuppoId].Mindist && DicAngleData[AngleData[0].SuppoId].Mindist > DicAngleData[ChannelC[2].SuppoId].Mindist)
+                        {
+                            if (GettouchigPrimCount(SupData, ChannelC[0]) == 1 && GettouchigPrimCount(SupData, ChannelC[1]) == 1 && GettouchigPrimCount(SupData, ChannelC[2]) == 1)
+                            {
+                                SupData.SupportType = "Support49";
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        bool CheckforTypeSupport47(ref SupportData SupData)
+        {
+            int plateCount = 0;
+            SupporSpecData NBPart = new SupporSpecData();
+            List<SupporSpecData> ChannelC = new List<SupporSpecData>();
+
+            List<SupporSpecData> AngleData = new List<SupporSpecData>();
+
+            foreach (var Data in SupData.ListSecondrySuppo)
+            {
+                if (Data.SupportName != null && Data.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    plateCount++;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("NB"))
+                {
+                    NBPart = Data;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("ISMC"))
+                {
+                    ChannelC.Add(Data);
+                }
+                else if (Data.Size != null && (Data.Size.ToUpper().Contains("L-") || Data.Size.ToUpper().Contains("ANGLE") || Data.Size.ToUpper().Contains("ISA")) && (!Data.Size.ToUpper().Contains("WEB")))
+                {
+                    AngleData.Add(Data);
+                }
+            }
+
+            if (plateCount == 5 && NBPart != null && ChannelC != null && ChannelC.Count == 3 && AngleData != null && AngleData.Count == 2)
+            {
+                if (Math.Round(Math.Abs(ChannelC[0].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(ChannelC[1].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(ChannelC[2].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(AngleData[0].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(AngleData[0].Angle.XinDegree).Equals(Math.Round(AngleData[1].Angle.XinDegree)))
+                {
+                    List<string> ListParSup = new List<string>();
+                    List<List<string>> CombinedParSupp = new List<List<string>>();
+
+                    ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+                    Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+                    DicMidistPt = CheckforMidDist(SupData);
+
+                    Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+                    DicDistConSup = GetminDistFromConcrete(SupData);
+
+                    string Id = GetMinDistFromDic(DicDistConSup);
+
+                    string VerPartId = "";
+                    foreach (var Part in CombinedParSupp)
+                    {
+                        if (Part.Count == 1)
+                        {
+                            if (Part[0] == Id)
+                            {
+                                VerPartId = Id;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (VerPartId.Length < 1)
+                    {
+                        return false;
+                    }
+
+                    Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+                    List<Vector3D> ListVecData = new List<Vector3D>();
+
+                    DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+                    if (Math.Round(DicAngleData[AngleData[0].SuppoId].Angle).Equals(-90) && (Math.Round(DicAngleData[AngleData[1].SuppoId].Angle)).Equals(-90) && Math.Round(DicAngleData[ChannelC[0].SuppoId].Angle).Equals(90) && Math.Round(DicAngleData[ChannelC[1].SuppoId].Angle).Equals(90) && Math.Round(DicAngleData[ChannelC[2].SuppoId].Angle).Equals(90))
+                    {
+                        if (DicAngleData[AngleData[0].SuppoId].Mindist > DicAngleData[ChannelC[0].SuppoId].Mindist && DicAngleData[AngleData[0].SuppoId].Mindist > DicAngleData[ChannelC[1].SuppoId].Mindist && DicAngleData[AngleData[0].SuppoId].Mindist > DicAngleData[ChannelC[2].SuppoId].Mindist)
+                        {
+                            if (GettouchigPrimCount(SupData, ChannelC[0]) == 1 && GettouchigPrimCount(SupData, ChannelC[1]) == 1 && GettouchigPrimCount(SupData, ChannelC[2]) == 1)
+                            {
+                                SupData.SupportType = "Support47";
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        bool CheckforTypeSupport38(ref SupportData SupData)
+        {
+            int inx = 0;
+            return false;
+        }
         // bool CheckforTypeSupport28(ref SupportData SupData)
         //{
         //}
+
+        int GettouchigPrimCount(SupportData SupData, SupporSpecData ChannelC)
+        {
+            int Count = 0;
+            foreach (var Data in SupData.ListPrimarySuppo)
+            {
+                if (Data.ListtouchingParts.Contains(ChannelC.SuppoId))
+                {
+                    Count++;
+                }
+            }
+
+            return Count;
+        }
         bool HasWord(List<SupporSpecData> SecondarySupData, string Word)
         {
             foreach (var Data in SecondarySupData)
@@ -2037,6 +3357,271 @@ namespace Project1.Support2D
             return false;
         }
 
+
+        bool Checkforangle(ref SupportData SupportData)
+        {
+            foreach (var SSup in SupportData.ListSecondrySuppo)
+            {
+                if (SSup != null && (SSup.Size.ToLower().Contains("l-") || SSup.Size.ToLower().Contains("angle") || SSup.Size.ToLower().Contains("isa")) && !SSup.Size.ToLower().Contains("web"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool CheckforTypeSupport43(ref SupportData SupData)
+        {
+            List<string> ListFlgId = new List<string>();
+
+            if (SupData.ListPrimarySuppo[0].SupportName.Contains("GRP FLG") && SupData.ListPrimarySuppo[1].SupportName.Contains("GRP FLG"))
+            {
+                ListFlgId.Add(SupData.ListPrimarySuppo[0].SuppoId);
+                ListFlgId.Add(SupData.ListPrimarySuppo[1].SuppoId);
+                System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 0, 1);
+
+                Vec1.X = SupData.ListPrimarySuppo[0].NoramlDir.X;
+                Vec1.Y = SupData.ListPrimarySuppo[0].NoramlDir.Y;
+                Vec1.Z = SupData.ListPrimarySuppo[0].NoramlDir.Z;
+                Vec2.X = SupData.ListPrimarySuppo[1].NoramlDir.X;
+                Vec2.Y = SupData.ListPrimarySuppo[1].NoramlDir.Y;
+                Vec2.Z = SupData.ListPrimarySuppo[1].NoramlDir.Z;
+
+                if (Math.Abs(Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3)))).Equals(180))
+                {
+                    List<SupporSpecData> ListPlateData = new List<SupporSpecData>();
+
+                    // Need to make this line more safe may cause Exception
+                    if (GetPlateFromSecondarySuppo(SupData.ListSecondrySuppo, ref ListPlateData))
+                    {
+                        if (ListPlateData != null && ListPlateData.Count == 1)
+                        {
+                            List<string> ListParSup = new List<string>();
+                            List<List<string>> CombinedParSupp = new List<List<string>>();
+
+                            ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+                            Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+                            DicMidistPt = CheckforMidDist(SupData);
+
+                            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+                            DicDistConSup = GetminDistFromConcrete(SupData);
+
+                            string Id = GetMinDistFromDic(DicDistConSup);
+
+                            string VerPartId = "";
+                            foreach (var Part in CombinedParSupp)
+                            {
+                                if (Part.Count == 1)
+                                {
+                                    if (Part[0] == Id)
+                                    {
+                                        VerPartId = Id;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (VerPartId.Length < 1)
+                            {
+                                return false;
+                            }
+
+                            string ParttochingVerKey = "";
+                            string Parttoplate = "";
+                            SupporSpecData VerPart = new SupporSpecData();
+                            SupporSpecData PartTouchingtoVer = new SupporSpecData();
+                            SupporSpecData PartToucingPlateandpartnextver = new SupporSpecData();
+                            foreach (var SSupp in SupData.ListSecondrySuppo)
+                            {
+                                if (SSupp.SuppoId.Equals(VerPartId))
+                                {
+                                    VerPart = SSupp;
+                                    foreach (string SPart in SSupp.ListtouchingParts)
+                                    {
+                                        if (DicDistConSup.ContainsKey(SPart))
+                                        {
+                                            ParttochingVerKey = SPart;
+                                        }
+                                    }
+                                }
+                            }
+
+                            foreach (var SSupp in SupData.ListSecondrySuppo)
+                            {
+                                if (SSupp.SuppoId.Equals(ParttochingVerKey))
+                                {
+                                    PartTouchingtoVer = SSupp;
+                                    foreach (string SPart in SSupp.ListtouchingParts)
+                                    {
+                                        if (DicDistConSup.ContainsKey(SPart) && SPart != VerPartId)
+                                        {
+                                            Parttoplate = SPart;
+                                        }
+                                    }
+                                }
+                            }
+
+                            try
+                            {
+                                if (SupData.ListSecondrySuppo.Exists(e => e.SuppoId.Equals(Parttoplate)))
+                                {
+                                    PartToucingPlateandpartnextver = SupData.ListSecondrySuppo.Find(e => e.SuppoId.Equals(Parttoplate));
+                                }
+                            }
+                            catch (Exception)
+                            {
+                            }
+
+                            Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+                            List<Vector3D> ListVecData = new List<Vector3D>();
+
+                            DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+                            if (VerPart != null && PartTouchingtoVer != null && PartToucingPlateandpartnextver != null)
+                            {
+                                if (DicAngleData[PartTouchingtoVer.SuppoId].Angle.Equals(-90) && Math.Abs(Math.Round(VerPart.Angle.ZinDegree - PartTouchingtoVer.Angle.ZinDegree)).Equals(90) &&
+                                    Math.Abs(Math.Round(PartTouchingtoVer.Angle.ZinDegree - PartToucingPlateandpartnextver.Angle.ZinDegree)).Equals(90) && (Math.Round(PartTouchingtoVer.Angle.XinDegree)).Equals((Math.Round(PartToucingPlateandpartnextver.Angle.XinDegree))).Equals(-90))
+                                {
+
+                                    foreach (var Data in SupData.ListSecondrySuppo)
+                                    {
+                                        if (Data.SuppoId != null && (Data.SuppoId.Equals(PartToucingPlateandpartnextver.SuppoId) || Data.SuppoId.Equals(PartTouchingtoVer.SuppoId)))
+                                        {
+                                            Data.PartDirection = "Hor";
+                                        }
+                                        else if (Data.SuppoId != null && Data.SuppoId.Equals(VerPartId))
+                                        {
+                                            Data.PartDirection = "Ver";
+                                        }
+                                    }
+                                    SupData.SupportType = "Support43";
+                                    return true;
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+            }
+            return false;
+        }
+
+        bool CheckforTypeSupport41(ref SupportData SupData)
+        {
+            List<string> ListParSup = new List<string>();
+            List<List<string>> CombinedParSupp = new List<List<string>>();
+
+            ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+            DicDistConSup = GetminDistFromConcrete(SupData);
+
+            string Id = GetMinDistFromDic(DicDistConSup);
+
+            string VerPartId = "";
+            foreach (var Part in CombinedParSupp)
+            {
+                if (Part.Count == 1)
+                {
+                    if (Part[0] == Id)
+                    {
+                        VerPartId = Id;
+                        break;
+                    }
+                }
+            }
+
+            if (VerPartId.Length < 1)
+            {
+                return false;
+            }
+
+            Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+            List<Vector3D> ListVecData = new List<Vector3D>();
+
+            DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+            int POS90count = 0;
+            int NEV90count = 0;
+            string NegativePartId = "";
+            List<string> PosPartsId = new List<string>();
+            if (DicAngleData.Count == 3)
+            {
+                foreach (var Data in DicAngleData)
+                {
+                    if (Math.Round(Data.Value.Angle).Equals(90))
+                    {
+                        POS90count++;
+                        PosPartsId.Add(Data.Key);
+                    }
+                    else if (Math.Round(Data.Value.Angle).Equals(-90))
+                    {
+                        NEV90count++;
+                        NegativePartId = Data.Key;
+                    }
+                }
+            }
+
+
+            List<SupporSpecData> PosPartList = new List<SupporSpecData>();
+            SupporSpecData NevPartData = new SupporSpecData();
+            SupporSpecData VerPartData = new SupporSpecData();
+
+            if (POS90count == 2 && NEV90count == 1 &&
+                !CheckVectorsArePlaner(ListVecData))
+            {
+                foreach (var Data in SupData.ListSecondrySuppo)
+                {
+                    if (Data.SuppoId != null && PosPartsId.Contains(Data.SuppoId))
+                    {
+                        PosPartList.Add(Data);
+                    }
+                    else if (Data.SuppoId != null && Data.SuppoId.Equals(NegativePartId))
+                    {
+                        NevPartData = Data;
+                    }
+                    else if (Data.SuppoId != null && Data.SuppoId.Equals(VerPartId))
+                    {
+                        VerPartData = Data;
+                    }
+                }
+                if (PosPartList.Count == 2 && Math.Round(PosPartList[0].Angle.ZinDegree).Equals(Math.Round(PosPartList[1].Angle.ZinDegree)) && NevPartData != null && VerPartData != null && Math.Round(NevPartData.Angle.ZinDegree).Equals(Math.Round(VerPartData.Angle.ZinDegree)) && Math.Abs(Math.Round(PosPartList[0].Angle.ZinDegree - NevPartData.Angle.ZinDegree)).Equals(90))
+                {
+
+                    foreach (var Data in SupData.ListSecondrySuppo)
+                    {
+                        if (Data.SuppoId != null && PosPartsId.Contains(Data.SuppoId))
+                        {
+                            Data.PartDirection = "Hor";
+                        }
+                        else if (Data.SuppoId != null && Data.SuppoId.Equals(NegativePartId))
+                        {
+                            Data.PartDirection = "Hor";
+                        }
+                        else if (Data.SuppoId != null && Data.SuppoId.Equals(VerPartId))
+                        {
+                            Data.PartDirection = "Ver";
+                        }
+                    }
+                    SupData.SupportType = "Support41";
+                    return true;
+                }
+
+            }
+
+            return false;
+        }
+
+        //bool CheckforTypeSupport36(ref SupportData SupportData)
+        //{
+
+        // }
         bool CheckforTypeSupport31(ref SupportData SupportData)
         {
             if (Math.Round(SupportData.ListSecondrySuppo[0].Angle.ZinDegree).Equals(Math.Round(SupportData.ListSecondrySuppo[1].Angle.ZinDegree)) && Math.Round(SupportData.ListSecondrySuppo[1].Angle.ZinDegree).Equals(Math.Round(SupportData.ListSecondrySuppo[2].Angle.ZinDegree)) && Math.Round(SupportData.ListSecondrySuppo[0].Angle.YinDegree).Equals(Math.Round(SupportData.ListSecondrySuppo[1].Angle.YinDegree)) && Math.Round(SupportData.ListSecondrySuppo[1].Angle.YinDegree).Equals(Math.Round(SupportData.ListSecondrySuppo[2].Angle.YinDegree)))
@@ -2047,6 +3632,20 @@ namespace Project1.Support2D
             return false;
         }
 
+        int GetGussetCout(ref SupportData SupportData)
+        {
+            int Count = 0;
+
+            foreach (var SSup in SupportData.ListSecondrySuppo)
+            {
+                if (SSup.IsGussetplate)
+                {
+                    Count++;
+                }
+            }
+
+            return Count;
+        }
         bool CheckAnyPartSecInclined(ref SupportData SupportData)
         {
 
@@ -2058,7 +3657,7 @@ namespace Project1.Support2D
             foreach (var SecSup in SupportData.ListSecondrySuppo)
             {
                 string InclinedId = "";
-                if (Math.Round(SecSup.Angle.XinDegree).Equals(45) || Math.Round(SecSup.Angle.XinDegree).Equals(135))
+                if (Math.Abs(Math.Round(SecSup.Angle.XinDegree)).Equals(45) || Math.Abs(Math.Round(SecSup.Angle.XinDegree)).Equals(135))
                 {
                     InclinedId = SecSup.SuppoId;
 
@@ -2071,7 +3670,7 @@ namespace Project1.Support2D
                     VerPart = SecSup;
                     Condition2 = true;
                 }
-                else if (Math.Round(SecSup.Angle.XinDegree).Equals(90))
+                else if (Math.Abs(Math.Round(SecSup.Angle.XinDegree)).Equals(90))
                 {
                     SecSup.PartDirection = "Hor";
                     HorPart = SecSup;
@@ -2081,7 +3680,6 @@ namespace Project1.Support2D
 
             if (Condition1 && Condition2 && Condition3)
             {
-
                 if (Math.Round(VerPart.Boundingboxmax.Z) > Math.Round(HorPart.Centroid.Z))
                 {
                     System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
@@ -2112,11 +3710,51 @@ namespace Project1.Support2D
 
                     if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(90))
                     {
-                        if (Calculate.DistPoint(SupportData.ListPrimarySuppo[0].Centroid, GetPt3DFromArray(VerPart.EndPt)) > Calculate.DistPoint(GetPt3DFromArray(VerPart.EndPt), GetPt3DFromArray(Closestpt)))
+                        if (SupportData.ListPrimarySuppo == null || SupportData.ListPrimarySuppo.Count == 0)
+                        {
+                            SupportData.SupportType = "Support63";
+                            return true;
+                        }
+                        else if (Calculate.DistPoint(SupportData.ListPrimarySuppo[0].Centroid, GetPt3DFromArray(VerPart.EndPt)) > Calculate.DistPoint(GetPt3DFromArray(VerPart.EndPt), GetPt3DFromArray(Closestpt)))
                         {
                             SupportData.SupportType = "Support31";
                             return true;
                         }
+                    }
+                }
+                else if (Math.Round(VerPart.Boundingboxmax.Z) < Math.Round(HorPart.Centroid.Z))
+                {
+                    System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                    System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                    System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+
+                    double[] Closestpt = new double[3];
+                    if (Calculate.DistPoint(GetPt3DFromArray(VerPart.EndPt), GetPt3DFromArray(HorPart.EndPt)) > Calculate.DistPoint(GetPt3DFromArray(VerPart.EndPt), GetPt3DFromArray(HorPart.StPt)))
+                    {
+                        Vec1.X = HorPart.EndPt[0] - HorPart.StPt[0];
+                        Vec1.Y = HorPart.EndPt[1] - HorPart.StPt[1];
+                        Vec1.Z = HorPart.EndPt[2] - HorPart.StPt[2];
+
+                        Closestpt = HorPart.StPt;
+                    }
+                    else
+                    {
+                        Vec1.X = HorPart.StPt[0] - HorPart.EndPt[0];
+                        Vec1.Y = HorPart.StPt[1] - HorPart.EndPt[1];
+                        Vec1.Z = HorPart.StPt[2] - HorPart.EndPt[2];
+
+                        Closestpt = HorPart.EndPt;
+                    }
+
+                    Vec2.X = VerPart.EndPt[0] - VerPart.StPt[0];
+                    Vec2.Y = VerPart.EndPt[1] - VerPart.StPt[1];
+                    Vec2.Z = VerPart.EndPt[2] - VerPart.StPt[2];
+
+                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(90))
+                    {
+
+                        SupportData.SupportType = "Support62";
+                        return true;
                     }
                 }
 
@@ -2127,8 +3765,11 @@ namespace Project1.Support2D
         //Need to Add the some code for the some conditon for the Support30
         bool CheckforTypeSupport30(ref SupportData SupData)
         {
+            List<string> ListFlgId = new List<string>();
             if (SupData.ListPrimarySuppo[0].SupportName.Contains("GRP FLG") && SupData.ListPrimarySuppo[1].SupportName.Contains("GRP FLG"))
             {
+                ListFlgId.Add(SupData.ListPrimarySuppo[0].SuppoId);
+                ListFlgId.Add(SupData.ListPrimarySuppo[1].SuppoId);
                 System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
                 System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
                 System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 0, 1);
@@ -2140,11 +3781,105 @@ namespace Project1.Support2D
                 Vec2.Y = SupData.ListPrimarySuppo[1].NoramlDir.Y;
                 Vec2.Z = SupData.ListPrimarySuppo[1].NoramlDir.Z;
 
-                if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(180))
+                if (Math.Abs(Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3)))).Equals(180))
                 {
-                    if (SupData.ListSecondrySuppo.Any(x => x.SupportName == "PLATE"))
-                    {
+                    List<SupporSpecData> ListPlateData = new List<SupporSpecData>();
 
+                    // Need to make this line more safe may cause Exception
+                    if (GetPlateFromSecondarySuppo(SupData.ListSecondrySuppo, ref ListPlateData))
+                    {
+                        if (ListPlateData != null && ListPlateData.Count == 1)
+                        {
+                            List<string> ListParSup = new List<string>();
+                            List<List<string>> CombinedParSupp = new List<List<string>>();
+
+                            ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+                            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+                            DicDistConSup = GetminDistFromConcrete(SupData);
+
+                            string Id = GetMinDistFromDic(DicDistConSup);
+
+                            string VerPartId = "";
+                            foreach (var Part in CombinedParSupp)
+                            {
+                                if (Part.Count == 1)
+                                {
+                                    if (Part[0] == Id)
+                                    {
+                                        VerPartId = Id;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (VerPartId.Length < 1)
+                            {
+                                return false;
+                            }
+
+                            Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+                            List<Vector3D> ListVecData = new List<Vector3D>();
+
+                            DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+                            int POS90count = 0;
+
+                            string NegativePartId = "";
+                            List<string> PosPartsId = new List<string>();
+                            if (DicAngleData.Count == 1)
+                            {
+                                foreach (var Data in DicAngleData)
+                                {
+                                    if (Math.Round(Data.Value.Angle).Equals(90))
+                                    {
+                                        POS90count++;
+                                        PosPartsId.Add(Data.Key);
+                                    }
+                                }
+
+                                if (POS90count == 1 && CheckVectorsArePlaner(ListVecData))
+                                {
+                                    SupporSpecData SupData1 = new SupporSpecData();
+                                    SupporSpecData SupData2 = new SupporSpecData();
+
+                                    foreach (var Data in SupData.ListSecondrySuppo)
+                                    {
+                                        if (Data.SuppoId != null && Data.SuppoId == PosPartsId[0])
+                                        {
+                                            SupData1 = Data;
+                                        }
+                                        else if (Data.SuppoId != null && Data.SuppoId == VerPartId)
+                                        {
+                                            SupData2 = Data;
+                                        }
+                                    }
+
+                                    if (Math.Round(SupData1.Angle.ZinDegree).Equals(Math.Round(SupData2.Angle.ZinDegree)))
+                                    {
+                                        if (ListPlateData[0].ListtouchingParts.Contains(PosPartsId[0]))
+                                        {
+                                            foreach (var Data in SupData.ListSecondrySuppo)
+                                            {
+                                                if (Data.SuppoId != null && DicAngleData.ContainsKey(Data.SuppoId))
+                                                {
+                                                    Data.PartDirection = "Hor";
+                                                }
+                                                else if (Data.SuppoId != null && Data.SuppoId == VerPartId)
+                                                {
+                                                    Data.PartDirection = "Ver";
+                                                }
+                                            }
+
+                                            SupData.SupportType = "Support30";
+                                            return true;
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2152,17 +3887,373 @@ namespace Project1.Support2D
             return false;
         }
 
-        bool CheckforTypeSupport32(ref SupportData SupData)
+        bool GetPlateFromSecondarySuppo(List<SupporSpecData> ListSecSuppoData, ref List<SupporSpecData> ListPlateData)
         {
-            foreach (var Prim in SupData.ListPrimarySuppo)
-            {
+            bool Hasplate = false;
 
+            foreach (var SuppoData in ListSecSuppoData)
+            {
+                if (SuppoData.SupportName != null && SuppoData.SupportName.ToUpper().Contains("PLATE"))
+                {
+                    ListPlateData.Add(SuppoData);
+                    Hasplate = true;
+                }
             }
 
+            return Hasplate;
+        }
 
+        List<int> CheckandGetindexesofGRPFLG(ref SupportData SupData)
+        {
+            List<int> listindex = new List<int>();
+            for (int inx = 0; inx < SupData.ListPrimarySuppo.Count; inx++)
+            {
+                if (SupData.ListPrimarySuppo[inx].SupportName.ToUpper().Contains("GRP FLG"))
+                {
+                    listindex.Add(inx);
+                }
+            }
+
+            return listindex;
+        }
+
+        bool CheckforTypeSupport32(ref SupportData SupData)
+        {
+            List<int> listindex = new List<int>();
+            listindex = CheckandGetindexesofGRPFLG(ref SupData);
+            List<string> ListFlgId = new List<string>();
+
+            if (listindex.Count == 2)
+            {
+                ListFlgId.Add(SupData.ListPrimarySuppo[listindex[0]].SuppoId);
+                ListFlgId.Add(SupData.ListPrimarySuppo[listindex[1]].SuppoId);
+                System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 0, 1);
+
+                Vec1.X = SupData.ListPrimarySuppo[listindex[0]].NoramlDir.X;
+                Vec1.Y = SupData.ListPrimarySuppo[listindex[0]].NoramlDir.Y;
+                Vec1.Z = SupData.ListPrimarySuppo[listindex[0]].NoramlDir.Z;
+                Vec2.X = SupData.ListPrimarySuppo[listindex[1]].NoramlDir.X;
+                Vec2.Y = SupData.ListPrimarySuppo[listindex[1]].NoramlDir.Y;
+                Vec2.Z = SupData.ListPrimarySuppo[listindex[1]].NoramlDir.Z;
+
+                if (Math.Abs(Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3)))).Equals(180))
+                {
+                    List<SupporSpecData> ListPlateData = new List<SupporSpecData>();
+
+                    // Need to make this line more safe may cause Exception
+                    if (GetPlateFromSecondarySuppo(SupData.ListSecondrySuppo, ref ListPlateData))
+                    {
+                        if (ListPlateData != null && ListPlateData.Count == 1)
+                        {
+                            List<string> ListParSup = new List<string>();
+                            List<List<string>> CombinedParSupp = new List<List<string>>();
+
+                            ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+                            Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+                            DicMidistPt = CheckforMidDist(SupData);
+
+                            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+                            DicDistConSup = GetminDistFromConcrete(SupData);
+
+                            string Id = GetMinDistFromDic(DicDistConSup);
+
+                            string VerPartId = "";
+                            foreach (var Part in CombinedParSupp)
+                            {
+                                if (Part.Count == 1)
+                                {
+                                    if (Part[0] == Id)
+                                    {
+                                        VerPartId = Id;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (VerPartId.Length < 1)
+                            {
+                                return false;
+                            }
+
+                            Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+                            List<Vector3D> ListVecData = new List<Vector3D>();
+
+                            DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+                            int POS90count = 0;
+                            int SymetricCount = 0;
+
+                            string NegativePartId = "";
+                            List<string> PosPartsId = new List<string>();
+                            if (DicAngleData.Count == 2)
+                            {
+                                foreach (var Data in DicAngleData)
+                                {
+                                    if (Math.Round(Data.Value.Angle).Equals(90))
+                                    {
+                                        POS90count++;
+                                        PosPartsId.Add(Data.Key);
+                                    }
+                                    else if (DicMidistPt.Count == 1 && DicMidistPt.ContainsKey(Data.Key))
+                                    {
+                                        SymetricCount++;
+                                    }
+                                }
+
+                                SupporSpecData SupData1 = new SupporSpecData();
+                                SupporSpecData SupData2 = new SupporSpecData();
+                                SupporSpecData SymPart = new SupporSpecData();
+                                if (POS90count == 1 && SymetricCount == 1 && !CheckVectorsArePlaner(ListVecData))
+                                {
+                                    foreach (var Data in SupData.ListSecondrySuppo)
+                                    {
+                                        if (Data.SuppoId != null && Data.SuppoId == PosPartsId[0])
+                                        {
+                                            SupData1 = Data;
+                                        }
+                                        else if (Data.SuppoId != null && Data.SuppoId == VerPartId)
+                                        {
+                                            SupData2 = Data;
+                                        }
+                                        else if (Data.SuppoId != null && Data.SuppoId == DicMidistPt.ElementAt(0).Key)
+                                        {
+                                            SymPart = Data;
+                                        }
+                                    }
+
+                                    if (ListPlateData != null && ListPlateData.Count == 1 && SupData1.ListtouchingParts.Contains(ListPlateData[0].SuppoId))
+                                    {
+                                        if (Math.Abs(Math.Round(SymPart.Angle.ZinDegree - SupData2.Angle.ZinDegree)).Equals(180) && Math.Abs(Math.Round(SupData1.Angle.ZinDegree - SupData2.Angle.ZinDegree)).Equals(90) && (SymPart.Boundingboxmax.Z > SupData2.Boundingboxmax.Z) &&
+                                            SymPart.ListtouchingParts.Contains(SupData.ListPrimarySuppo[GetMissingIndex(listindex, SupData)].SuppoId) && Math.Round(SupData1.Angle.XinDegree).Equals(Math.Round(SymPart.Angle.XinDegree)))
+                                        {
+                                            foreach (var Data in SupData.ListSecondrySuppo)
+                                            {
+                                                if (Data.SuppoId != null && SupData1.Equals(Data.SuppoId))
+                                                {
+                                                    Data.PartDirection = "Hor";
+                                                }
+                                                else if (Data.SuppoId != null && Data.SuppoId == VerPartId)
+                                                {
+                                                    Data.PartDirection = "Ver";
+                                                }
+                                                else if (Data.SuppoId != null && Data.SuppoId == SymPart.SuppoId)
+                                                {
+                                                    Data.PartDirection = "Hor";
+                                                }
+                                            }
+
+                                            SupData.SupportType = "Support32";
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
             return false;
         }
 
+        int GetMissingIndex(List<int> listindex, SupportData SupData)
+        {
+            for (int inx = 0; inx < SupData.ListPrimarySuppo.Count; inx++)
+            {
+                if (!listindex.Contains(inx))
+                {
+                    return inx;
+                }
+            }
+
+            return 0;
+        }
+        bool CheckforTypeSupport48(ref SupportData SupData)
+        {
+            int plateCount = 0;
+            SupporSpecData NBPart = new SupporSpecData();
+            List<SupporSpecData> ChannelC = new List<SupporSpecData>();
+
+            List<SupporSpecData> AngleData = new List<SupporSpecData>();
+
+            foreach (var Data in SupData.ListSecondrySuppo)
+            {
+                if (Data.SupportName != null && Data.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    plateCount++;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("NB"))
+                {
+                    NBPart = Data;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("ISMC"))
+                {
+                    ChannelC.Add(Data);
+                }
+                else if (Data.Size != null && (Data.Size.ToUpper().Contains("L-") || Data.Size.ToUpper().Contains("ANGLE") || Data.Size.ToUpper().Contains("ISA")) && (!Data.Size.ToUpper().Contains("WEB")))
+                {
+                    AngleData.Add(Data);
+                }
+            }
+
+            if (plateCount == 5 && NBPart != null && ChannelC != null && ChannelC.Count == 1 && AngleData != null && AngleData.Count == 2)
+            {
+                if (Math.Round(Math.Abs(ChannelC[0].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(AngleData[0].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(AngleData[0].Angle.XinDegree).Equals(Math.Round(AngleData[1].Angle.XinDegree)))
+                {
+                    List<string> ListParSup = new List<string>();
+                    List<List<string>> CombinedParSupp = new List<List<string>>();
+
+                    ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+                    Dictionary<string, double> DicMidistPt = new Dictionary<string, double>();
+                    DicMidistPt = CheckforMidDist(SupData);
+
+                    Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+                    DicDistConSup = GetminDistFromConcrete(SupData);
+
+                    string Id = GetMinDistFromDic(DicDistConSup);
+
+                    string VerPartId = "";
+                    foreach (var Part in CombinedParSupp)
+                    {
+                        if (Part.Count == 1)
+                        {
+                            if (Part[0] == Id)
+                            {
+                                VerPartId = Id;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (VerPartId.Length < 1)
+                    {
+                        return false;
+                    }
+
+                    Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+                    List<Vector3D> ListVecData = new List<Vector3D>();
+
+                    DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+                    if (Math.Round(DicAngleData[AngleData[0].SuppoId].Angle).Equals(-90) && (Math.Round(DicAngleData[AngleData[1].SuppoId].Angle)).Equals(-90) && (Math.Round(DicAngleData[NBPart.SuppoId].Angle).Equals(90)) && DicAngleData[AngleData[0].SuppoId].Mindist > DicAngleData[ChannelC[0].SuppoId].Mindist && DicAngleData[AngleData[1].SuppoId].Mindist > DicAngleData[NBPart.SuppoId].Mindist && SupData.ListSecondrySuppo[0].TouchingPartid.Contains(SupData.ListPrimarySuppo[0].SuppoId))
+                    {
+                        SupData.SupportType = "Support48";
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        bool CheckforTypeSupport29(ref SupportData SupData)
+        {
+            int plateCount = 0;
+            SupporSpecData NBPart = new SupporSpecData();
+            List<SupporSpecData> ChannelC = new List<SupporSpecData>();
+
+            SupporSpecData AngleData = new SupporSpecData();
+
+            foreach (var Data in SupData.ListSecondrySuppo)
+            {
+                if (Data.SupportName != null && Data.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    plateCount++;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("NB"))
+                {
+                    NBPart = Data;
+                }
+                else if (Data.Size != null && Data.Size.ToUpper().Contains("ISMC"))
+                {
+                    ChannelC.Add(Data);
+                }
+                else if (Data.Size != null && (Data.Size.ToUpper().Contains("L-") || Data.Size.ToUpper().Contains("ANGLE") || Data.Size.ToUpper().Contains("ISA")) && (!Data.Size.ToUpper().Contains("WEB")))
+                {
+                    AngleData = Data;
+                }
+            }
+
+            if (plateCount == 5 && NBPart != null && ChannelC != null && ChannelC.Count == 1 && AngleData != null)
+            {
+                if (Math.Round(Math.Abs(ChannelC[0].Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90) && Math.Round(Math.Abs(AngleData.Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90))
+                {
+                    System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                    System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                    System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+
+                    System.Windows.Media.Media3D.Vector3D Vec4 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+
+                    Pt3D Point3D1 = new Pt3D();
+                    Pt3D Point3DAng = new Pt3D();
+                    if (Calculate.DistPoint(GetPt3DFromArray(NBPart.EndPt), GetPt3DFromArray(ChannelC[0].EndPt)) > Calculate.DistPoint(GetPt3DFromArray(NBPart.EndPt), GetPt3DFromArray(ChannelC[0].StPt)))
+                    {
+
+                        Vec1.X = ChannelC[0].EndPt[0] - ChannelC[0].StPt[0];
+                        Vec1.Y = ChannelC[0].EndPt[1] - ChannelC[0].StPt[1];
+                        Vec1.Z = ChannelC[0].EndPt[2] - ChannelC[0].StPt[2];
+                        Point3D1 = GetPt3DFromArray(ChannelC[0].StPt);
+                    }
+                    else
+                    {
+                        Vec1.X = ChannelC[0].StPt[0] - ChannelC[0].EndPt[0];
+                        Vec1.Y = ChannelC[0].StPt[1] - ChannelC[0].EndPt[1];
+                        Vec1.Z = ChannelC[0].StPt[2] - ChannelC[0].EndPt[2];
+
+                        Point3D1 = GetPt3DFromArray(ChannelC[0].EndPt);
+                    }
+
+                    if (Calculate.DistPoint(GetPt3DFromArray(NBPart.EndPt), GetPt3DFromArray(AngleData.EndPt)) > Calculate.DistPoint(GetPt3DFromArray(NBPart.EndPt), GetPt3DFromArray(AngleData.StPt)))
+                    {
+                        Vec4.X = AngleData.EndPt[0] - AngleData.StPt[0];
+                        Vec4.Y = AngleData.EndPt[1] - AngleData.StPt[1];
+                        Vec4.Z = AngleData.EndPt[2] - AngleData.StPt[2];
+
+                        Point3DAng = GetPt3DFromArray(AngleData.StPt);
+                    }
+                    else
+                    {
+                        Vec4.X = AngleData.StPt[0] - AngleData.EndPt[0];
+                        Vec4.Y = AngleData.StPt[1] - AngleData.EndPt[1];
+                        Vec4.Z = AngleData.StPt[2] - AngleData.EndPt[2];
+                        Point3DAng = GetPt3DFromArray(AngleData.EndPt);
+                    }
+
+
+                    Vec2.X = NBPart.EndPt[0] - NBPart.StPt[0];
+                    Vec2.Y = NBPart.EndPt[1] - NBPart.StPt[1];
+                    Vec2.Z = NBPart.EndPt[2] - NBPart.StPt[2];
+
+                    if ((Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(90)
+                       && Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec4, Vec2, Vec3))).Equals(-90)) ||
+                       (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(-90)
+                       && Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec4, Vec2, Vec3))).Equals(90)))
+                    {
+                        List<Vector3D> ListVecData = new List<Vector3D>();
+                        ListVecData.Add(Vec1);
+                        ListVecData.Add(Vec2);
+                        ListVecData.Add(Vec4);
+                        if (CheckVectorsArePlaner(ListVecData))
+                        {
+                            if (Calculate.DistPoint(SupData.ListConcreteData[0].Centroid, Point3DAng) > Calculate.DistPoint(SupData.ListConcreteData[0].Centroid, Point3D1))
+                            {
+                                // if (CheckTwoSuppoCollinear(ChannelC[0], ChannelC[1]))
+                                {
+                                    SupData.SupportType = "Support29";
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+            return false;
+        }
         bool CheckforTypeSupport27(ref SupportData SupData)
         {
             int plateCount = 0;
@@ -2287,6 +4378,76 @@ namespace Project1.Support2D
 
             return false;
         }
+
+        bool CheckforTypeSupport45(ref SupportData SupData)
+        {
+            int plateCount = 0;
+            SupporSpecData NBPart = new SupporSpecData();
+            SupporSpecData ChannelC = new SupporSpecData();
+            foreach (var Data in SupData.ListSecondrySuppo)
+            {
+                if (Data.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    plateCount++;
+                }
+                else if (Data.Size.ToUpper().Contains("NB"))
+                {
+                    NBPart = Data;
+                }
+                else if (Data.Size.ToUpper().Contains("ISMC"))
+                {
+                    ChannelC = Data;
+                }
+            }
+
+            if (plateCount == 5 && NBPart != null && ChannelC != null)
+            {
+                if (Math.Round(Math.Abs(ChannelC.Angle.XinDegree - NBPart.Angle.XinDegree)).Equals(90))
+                {
+                    System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                    System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                    System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+
+                    Vec1.X = ChannelC.EndPt[0] - ChannelC.StPt[0];
+                    Vec1.Y = ChannelC.EndPt[1] - ChannelC.StPt[1];
+                    Vec1.Z = ChannelC.EndPt[2] - ChannelC.StPt[2];
+
+                    Vec2.X = NBPart.EndPt[0] - NBPart.StPt[0];
+                    Vec2.Y = NBPart.EndPt[1] - NBPart.StPt[1];
+                    Vec2.Z = NBPart.EndPt[2] - NBPart.StPt[2];
+
+                    List<Pt3D> BPartCentroids = new List<Pt3D>();
+                    List<Pt3D> PPartCentroids = new List<Pt3D>();
+                    List<Pt3D> SPartCentroids = new List<Pt3D>();
+                    string Orin = "";
+
+                    BPartCentroids = GetDicCentroidBottomPart(SupData);
+                    SPartCentroids.Add(NBPart.Centroid);
+                    SPartCentroids.Add(ChannelC.Centroid);
+                    PPartCentroids = GetDicCentroidPrimaryPart(SupData);
+
+
+                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(90))
+                    {
+                        if (CheckforCollinear(ChannelC, NBPart))
+                        {
+                            if (SupData.ListPrimarySuppo.Count == 2)
+                            {
+                                SupData.SupportType = "Support33";
+                                return true;
+                            }
+                            else
+                            {
+                                SupData.SupportType = "Support25";
+                                return true;
+                            }
+                        }
+                    }
+
+                }
+            }
+            return false;
+        }
         bool CheckforTypeSupport25(ref SupportData SupData)
         {
             int plateCount = 0;
@@ -2343,8 +4504,26 @@ namespace Project1.Support2D
                     {
                         if (CheckforCollinear(ChannelC, NBPart))
                         {
-                            SupData.SupportType = "Support25";
-                            return true;
+                            if (SupData.ListPrimarySuppo.Count == 4 && SupData.ListPrimarySuppo[0].SuppoId != null && SupData.ListPrimarySuppo[1].SuppoId != null &&
+                                SupData.ListPrimarySuppo[2].SuppoId != null && SupData.ListPrimarySuppo[3].SuppoId != null && ChannelC.SuppoId != null && SupData.ListPrimarySuppo[0].ListtouchingParts[0].Equals(ChannelC.SuppoId)
+                                && SupData.ListPrimarySuppo[1].ListtouchingParts[0].Equals(ChannelC.SuppoId)
+                                && SupData.ListPrimarySuppo[2].ListtouchingParts[0].Equals(ChannelC.SuppoId)
+                                && SupData.ListPrimarySuppo[3].ListtouchingParts[0].Equals(ChannelC.SuppoId)
+                                )
+                            {
+                                SupData.SupportType = "Support45";
+                                return true;
+                            }
+                            else if (SupData.ListPrimarySuppo.Count == 2)
+                            {
+                                SupData.SupportType = "Support33";
+                                return true;
+                            }
+                            else
+                            {
+                                SupData.SupportType = "Support25";
+                                return true;
+                            }
                         }
                     }
                     else if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(-90))
@@ -2398,12 +4577,369 @@ namespace Project1.Support2D
         }
         bool CheckforTypeSupport20(ref SupportData SupData)
         {
+            int ISCMCCount = 0;
+            int AngleCount = 0;
+
+            List<SupporSpecData> ListIsmc = new List<SupporSpecData>();
+            List<SupporSpecData> ListAngle = new List<SupporSpecData>();
+
+            foreach (var Data in SupData.ListSecondrySuppo)
+            {
+                if ((Data.Size.ToUpper().Contains("L-") || Data.Size.ToUpper().Contains("ANGLE")) && !Data.Size.ToUpper().Contains("WEB"))
+                {
+                    AngleCount++;
+                    ListAngle.Add(Data);
+                }
+                else if (Data.Size.ToUpper().Contains("WEB"))
+                {
+                    ISCMCCount++;
+                    ListIsmc.Add(Data);
+                }
+            }
+
+            //checfor
+
+            List<string> ListParSup = new List<string>();
+            List<List<string>> CombinedParSupp = new List<List<string>>();
+            //AnycentroidSecondaryMaching(ref SupData) // will use this later 
+            ListParSup = Checkandgetparllelsupports(ref SupData, ref CombinedParSupp);
+
+            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+            DicDistConSup = GetminDistFromConcrete(SupData);
+
+            string Id = GetMinDistFromDic(DicDistConSup);
+
+            string VerPartId = "";
+            foreach (var Part in CombinedParSupp)
+            {
+                if (Part.Count == 1)
+                {
+                    if (Part[0] == Id)
+                    {
+                        VerPartId = Id;
+                        break;
+                    }
+                }
+            }
+
+            if (VerPartId.Length < 1)
+            {
+                return false;
+            }
+
+            Dictionary<string, MinPtDist> DicAngleData = new Dictionary<string, MinPtDist>();
+
+            List<Vector3D> ListVecData = new List<Vector3D>();
+
+            DicAngleData = GetAngleBetweenSupport(VerPartId, SupData, ref ListVecData);
+
+            int POS90count = 0;
+            int NEV90count = 0;
+            bool AngleCond = false;
+            bool DistCond = false;
+            string NegativePartId = "";
+            string PosPartId = "";
+            if (AngleCount == 1 && DicAngleData.Count == 3)
+            {
+                foreach (var Data in DicAngleData)
+                {
+                    if (Data.Key.Equals(ListAngle[0].SuppoId) && Math.Round(Data.Value.Angle).Equals(90))
+                    {
+                        POS90count++;
+                        AngleCond = true;
+                    }
+                    else if (Math.Round(Data.Value.Angle).Equals(90))
+                    {
+                        POS90count++;
+                        PosPartId = Data.Key;
+                        if (Data.Value.Mindist > DicAngleData[ListAngle[0].SuppoId].Mindist)
+                        {
+                            DistCond = true;
+                        }
+                    }
+                    else if (Math.Round(Data.Value.Angle).Equals(-90))
+                    {
+                        NEV90count++;
+                        NegativePartId = Data.Key;
+                    }
+                }
+            }
+
+
+            //  CheckVectorsArePlaner(ListVecData);
+
+            if (POS90count == 2 && NEV90count == 1 && AngleCond && DistCond && CheckVectorsArePlaner(ListVecData))
+            {
+                SupporSpecData SupData1 = new SupporSpecData();
+                SupporSpecData SupData2 = new SupporSpecData();
+
+                foreach (var Data in SupData.ListSecondrySuppo)
+                {
+                    if (Data.SuppoId != null && Data.SuppoId == NegativePartId)
+                    {
+                        SupData1 = Data;
+                    }
+                    else if (Data.SuppoId != null && Data.SuppoId == PosPartId)
+                    {
+                        SupData2 = Data;
+                    }
+                }
+
+                if (Math.Round(SupData1.Angle.ZinDegree).Equals(Math.Round(SupData2.Angle.ZinDegree)))
+                {
+                    foreach (var Data in SupData.ListSecondrySuppo)
+                    {
+                        if (Data.SuppoId != null && DicAngleData.ContainsKey(Data.SuppoId))
+                        {
+                            Data.PartDirection = "Hor";
+                        }
+                        else
+                        {
+                            Data.PartDirection = "Ver";
+                        }
+                    }
+                    SupData.SupportType = "Support20";
+                    return true;
+                }
+                else if (Math.Abs(Math.Round(SupData1.Angle.ZinDegree - SupData2.Angle.ZinDegree)).Equals(180))
+                {
+                    foreach (var Data in SupData.ListSecondrySuppo)
+                    {
+                        if (Data.SuppoId != null && DicAngleData.ContainsKey(Data.SuppoId))
+                        {
+                            Data.PartDirection = "Hor";
+                        }
+                        else
+                        {
+                            Data.PartDirection = "Ver";
+                        }
+                    }
+                    SupData.SupportType = "Support40";
+                    return true;
+                }
+            }
 
             return false;
         }
 
+        bool CheckVectorsArePlaner(List<Vector3D> ListVecData)
+        {
+            List<bool> ListAreCoplaner = new List<bool>();
+            if (ListVecData.Count < 3)
+            {
+                return true;
+            }
+            else
+            {
+                for (int inx = 0; inx < ListVecData.Count - 2; inx++)
+                {
+                    if (Math.Round(Vector3D.DotProduct(ListVecData[inx], Vector3D.CrossProduct(ListVecData[inx + 1], ListVecData[inx + 2]))) == 0)
+                    {
+                        ListAreCoplaner.Add(true);
+                    }
+                    else
+                    {
+                        ListAreCoplaner.Add(false);
+                    }
+                }
+            }
+
+            if (ListAreCoplaner.Any(x => x.Equals(false)))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        Dictionary<string, MinPtDist> GetAngleBetweenSupport(string VerPartId, SupportData SupData, ref List<Vector3D> ListVecData)
+        {
+            Dictionary<string, MinPtDist> Minptlist = new Dictionary<string, MinPtDist>();
+
+            Pt3D BottomPtofVerPart = new Pt3D();
+            Pt3D MaxPt = new Pt3D();
+            Vector3D Vec1 = new Vector3D();
+            foreach (var SSuppo in SupData.ListSecondrySuppo)
+            {
+                if (SSuppo.SuppoId.Equals(VerPartId) && !SSuppo.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    Pt3D MinPartPt = new Pt3D();
+
+                    bool IsSymetricCen = false;
+                    FindMinDist(SupData.ListConcreteData[0].Centroid, SSuppo, ref BottomPtofVerPart, ref IsSymetricCen);
+
+                    MaxPt = GetotherPt(SSuppo, BottomPtofVerPart);
+                    Vec1 = GetVector(MaxPt, BottomPtofVerPart);
+                }
+            }
+
+            ListVecData.Add(Vec1);
+
+            foreach (var SSuppo in SupData.ListSecondrySuppo)
+            {
+                if (!SSuppo.SuppoId.Equals(VerPartId) && !SSuppo.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    Pt3D MinPartPt = new Pt3D();
+                    Pt3D MaxPt1 = new Pt3D();
+                    MinPtDist PtandDist = new MinPtDist();
+                    Vector3D Vec2 = new Vector3D();
+                    bool IsSymetricCen = false;
+                    PtandDist.Mindist = FindMinDist(BottomPtofVerPart, SSuppo, ref MinPartPt, ref IsSymetricCen);
+
+                    PtandDist.MinPt = MinPartPt;
+                    MaxPt1 = GetotherPt(SSuppo, MinPartPt);
+                    Vec2 = GetVector(MaxPt1, MinPartPt);
+                    ListVecData.Add(Vec2);
+                    PtandDist.Angle = Calculate.ConvertRadiansToDegrees(
+                    Calculate.GetSignedRotation(Vec1, Vec2, new Vector3D(1, 0, 0)));
+
+                    Minptlist[SSuppo.SuppoId] = PtandDist;
+                }
+            }
+            return Minptlist;
+        }
+
+        Vector3D GetVector(Pt3D MaxPt, Pt3D MinPartPt)
+        {
+            Vector3D Vec = new Vector3D();
+
+            Vec.X = MaxPt.X - MinPartPt.X;
+            Vec.Y = MaxPt.Y - MinPartPt.Y;
+            Vec.Z = MaxPt.Z - MinPartPt.Z;
+
+            Vec.Normalize();
+            return Vec;
+        }
+        Pt3D GetotherPt(SupporSpecData SSuppo, Pt3D MinPartPt)
+        {
+            Pt3D pt3D = new Pt3D();
+            if ((Math.Abs(SSuppo.StPt[0] - MinPartPt.X) < 0.1) && (Math.Abs(SSuppo.StPt[1] - MinPartPt.Y) < 0.1) && (Math.Abs(SSuppo.StPt[2] - MinPartPt.Z) < 0.1))
+            {
+                return GetPt3DFromArray(SSuppo.EndPt);
+            }
+            else
+            {
+                return GetPt3DFromArray(SSuppo.StPt);
+            }
+        }
+
+        string GetMinDistFromDic(Dictionary<string, double> DicDistConSup)
+        {
+            bool IsFirst = true;
+            double MinValue = 0;
+            string SuppoId = "";
+            foreach (var Data in DicDistConSup)
+            {
+                if (IsFirst)
+                {
+                    MinValue = Data.Value;
+                    SuppoId = Data.Key;
+                    IsFirst = false;
+                }
+                else
+                {
+                    if (Data.Value < MinValue)
+                    {
+                        MinValue = Data.Value;
+                        SuppoId = Data.Key;
+                    }
+                }
+            }
+
+            return SuppoId;
+        }
+
+        Dictionary<string, double> GetminDistFromConcrete(SupportData SupData)
+        {
+            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+            if (SupData.ListConcreteData != null && SupData.ListConcreteData.Count > 0)
+            {
+                foreach (var Data in SupData.ListSecondrySuppo)
+                {
+                    if (Data != null && Data.SuppoId != null && !Data.SupportName.ToUpper().Equals("PLATE"))
+                    {
+                        Pt3D MinPtCoordinate = new Pt3D();
+                        bool IsSymetricCen = false;
+                        DicDistConSup[Data.SuppoId] = FindMinDist(SupData.ListConcreteData[0].Centroid, Data, ref MinPtCoordinate, ref IsSymetricCen);
+                    }
+                }
+            }
+
+            return DicDistConSup;
+        }
+
+
+        Dictionary<string, double> CheckforMidDist(SupportData SupData)
+        {
+            Dictionary<string, double> DicDistConSup = new Dictionary<string, double>();
+            if (SupData.ListConcreteData != null && SupData.ListConcreteData.Count > 0)
+            {
+                foreach (var Data in SupData.ListSecondrySuppo)
+                {
+                    if (Data != null && Data.SuppoId != null && !Data.SupportName.ToUpper().Equals("PLATE"))
+                    {
+                        Pt3D MinPtCoordinate = new Pt3D();
+                        bool IsSymetricCen = false;
+                        double Dist = FindMinDist(SupData.ListConcreteData[0].Centroid, Data, ref MinPtCoordinate, ref IsSymetricCen);
+                        if (IsSymetricCen)
+                        {
+                            DicDistConSup[Data.SuppoId] = Dist;
+                        }
+                    }
+                }
+            }
+
+            return DicDistConSup;
+        }
+
+        double FindMinDist(Pt3D InPt, SupporSpecData SecondarySup, ref Pt3D point, ref bool IsMidPoint)
+        {
+            double Dist1 = 0;
+            double Dist2 = 0;
+
+            if (InPt != null && SecondarySup.StPt != null && SecondarySup.EndPt != null)
+            {
+                if (SecondarySup.StPt[0] == 0 && SecondarySup.StPt[1] == 0 && SecondarySup.StPt[2] == 0 && SecondarySup.EndPt[0] == 0 && SecondarySup.EndPt[1] == 0 && SecondarySup.EndPt[2] == 0)
+                {
+                    return 0;
+                }
+
+                Dist1 = Calculate.DistPoint(InPt, GetPt3DFromArray(SecondarySup.StPt));
+
+                Dist2 = Calculate.DistPoint(InPt, GetPt3DFromArray(SecondarySup.EndPt));
+
+                if (Math.Round(Dist1).Equals(Math.Round(Dist2)))
+                {
+                    Pt3D MidPt = new Pt3D();
+                    MidPt.X = (SecondarySup.StPt[0] + SecondarySup.EndPt[0]) / 2;
+                    MidPt.Y = (SecondarySup.StPt[1] + SecondarySup.EndPt[1]) / 2;
+                    MidPt.Z = (SecondarySup.StPt[2] + SecondarySup.EndPt[2]) / 2;
+                    Dist1 = Calculate.DistPoint(InPt, MidPt);
+
+                    point = MidPt;
+                    IsMidPoint = true;
+                    return Dist1;
+                }
+                else if (Dist1 < Dist2)
+                {
+                    point = GetPt3DFromArray(SecondarySup.StPt);
+                    return Dist1;
+                }
+                else
+                {
+                    point = GetPt3DFromArray(SecondarySup.EndPt);
+                    return Dist2;
+                }
+            }
+
+            return 0;
+        }
+
         System.Windows.Media.Media3D.Vector3D GetVecStartfrompnts(SupporSpecData VerSuppo, SupporSpecData SecData)
         {
+
             System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
             if (Calculate.DistPoint(GetPt3DFromArray(VerSuppo.StPt), GetPt3DFromArray(SecData.StPt)) > Calculate.DistPoint(GetPt3DFromArray(VerSuppo.StPt), GetPt3DFromArray(SecData.EndPt)))
             {
@@ -2417,6 +4953,7 @@ namespace Project1.Support2D
                 Vec1.Y = SecData.EndPt[1] - SecData.StPt[1];
                 Vec1.Z = SecData.EndPt[2] - SecData.StPt[2];
             }
+
 
             return Vec1;
         }
@@ -2626,6 +5163,39 @@ namespace Project1.Support2D
 
             return false;
         }
+
+        bool CheckforTypeSupport35(ref SupportData SupportData)
+        {
+            string Orientation = "";
+            if (!AreCentroidsinLine(SupportData, ref Orientation))
+            {
+                //May be Need to Modify the Support
+                System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 0, 1);
+
+                Vec1.X = SupportData.ListPrimarySuppo[0].Directionvec.YDirVec.X;
+                Vec1.Y = SupportData.ListPrimarySuppo[0].Directionvec.YDirVec.Y;
+                Vec1.Z = SupportData.ListPrimarySuppo[0].Directionvec.YDirVec.Z;
+
+                Vec2.X = (SupportData.ListSecondrySuppo[0].EndPt[0] - SupportData.ListSecondrySuppo[0].StPt[0]);
+                Vec2.Y = (SupportData.ListSecondrySuppo[0].EndPt[1] - SupportData.ListSecondrySuppo[0].StPt[1]);
+                Vec2.Z = (SupportData.ListSecondrySuppo[0].EndPt[2] - SupportData.ListSecondrySuppo[0].StPt[2]);
+
+                if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(0) || Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(180))
+                {
+                    SupportData.SupportType = "Support35";
+                    return true;
+                }
+            }
+            else
+            {
+                if (SupportData.ListPrimarySuppo[0].SupportName.ToLower().Contains("custom clamp"))
+                    SupportData.SupportType = "Support39";
+                return true;
+            }
+            return false;
+        }
         bool CheckforTypeSupport14(ref SupportData SupportData)
         {
             if (SupportData.ListPrimarySuppo[0].IsSupportNB)
@@ -2658,6 +5228,39 @@ namespace Project1.Support2D
                     return true;
                 }
             }
+            else
+            {
+                if (SupportData.ListPrimarySuppo[0].IsSupportNB)
+                {
+                    string Orientation = "";
+                    if (!AreCentroidsinLine(SupportData, ref Orientation))
+                    {
+                        System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                        System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                        System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 0, 1);
+
+                        Vec1.X = SupportData.ListPrimarySuppo[0].NoramlDir.X;
+                        Vec1.Y = SupportData.ListPrimarySuppo[0].NoramlDir.Y;
+                        Vec1.Z = SupportData.ListPrimarySuppo[0].NoramlDir.Z;
+
+                        Vec2.X = (SupportData.ListSecondrySuppo[0].EndPt[0] - SupportData.ListSecondrySuppo[0].StPt[0]);
+                        Vec2.Y = (SupportData.ListSecondrySuppo[0].EndPt[1] - SupportData.ListSecondrySuppo[0].StPt[1]);
+                        Vec2.Z = (SupportData.ListSecondrySuppo[0].EndPt[2] - SupportData.ListSecondrySuppo[0].StPt[2]);
+
+                        if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec1, Vec2, Vec3))).Equals(-90))
+                        {
+                            SupportData.SupportType = "Support14";
+                            return true;
+                        }
+
+                    }
+                    else
+                    {
+                        SupportData.SupportType = "Support17";
+                        return true;
+                    }
+                }
+            }
             return false;
         }
 
@@ -2680,6 +5283,11 @@ namespace Project1.Support2D
 
             foreach (var Data in SupData.ListSecondrySuppo)
             {
+                if (Data.SupportName.ToUpper().Equals("PLATE"))
+                {
+                    continue;
+                }
+
                 System.Windows.Media.Media3D.Vector3D Vecr = new System.Windows.Media.Media3D.Vector3D();
 
                 Vecr.X = Data.EndPt[0] - Data.StPt[0];
@@ -3291,7 +5899,7 @@ namespace Project1.Support2D
                 {
                     if (Math.Abs(SupportData.ListSecondrySuppo[0].Angle.XinDegree) > Math.Abs(SupportData.ListSecondrySuppo[1].Angle.XinDegree))
                     {
-                        if (Math.Abs(Math.Round(SupportData.ListSecondrySuppo[0].Angle.XinDegree)).Equals(90) && Math.Abs(Math.Round(SupportData.ListSecondrySuppo[1].Angle.XinDegree)).Equals(45))
+                        if (Math.Abs(Math.Round(SupportData.ListSecondrySuppo[0].Angle.XinDegree - SupportData.ListSecondrySuppo[1].Angle.XinDegree)).Equals(45))
                         {
                             if (Math.Round(SupportData.ListSecondrySuppo[0].StPt[0]).Equals(Math.Round(SupportData.ListSecondrySuppo[1].StPt[0])) || Math.Round(SupportData.ListSecondrySuppo[0].EndPt[0]).Equals(Math.Round(SupportData.ListSecondrySuppo[1].EndPt[0])) || (Math.Round(SupportData.ListSecondrySuppo[0].StPt[1]).Equals(Math.Round(SupportData.ListSecondrySuppo[1].StPt[1])) || Math.Round(SupportData.ListSecondrySuppo[0].EndPt[1]).Equals(Math.Round(SupportData.ListSecondrySuppo[1].EndPt[1]))) || (Math.Round(SupportData.ListSecondrySuppo[0].StPt[2]).Equals(Math.Round(SupportData.ListSecondrySuppo[1].StPt[2])) || Math.Round(SupportData.ListSecondrySuppo[0].EndPt[2]).Equals(Math.Round(SupportData.ListSecondrySuppo[1].EndPt[2]))))
                             {
@@ -3336,6 +5944,421 @@ namespace Project1.Support2D
             return false;
         }
 
+        bool CheckforTypeSupport34(ref SupportData SupportData)
+        {
+            int Index0 = 0;
+            int Index1 = 0;
+
+            bool IsIndex0 = false;
+
+            for (int inx = 0; inx < SupportData.ListSecondrySuppo.Count; inx++)
+            {
+                if (SupportData.ListSecondrySuppo[inx].Size != null && SupportData.ListSecondrySuppo[inx].Size.ToLower().Contains("web"))
+                {
+                    if (!IsIndex0)
+                    {
+                        Index0 = inx;
+                        IsIndex0 = true;
+                    }
+                    else
+                    {
+                        Index1 = inx;
+                    }
+                }
+            }
+
+            if (SupportData.ListSecondrySuppo[Index0].Angle.YinDegree.Equals(0) && SupportData.ListSecondrySuppo[Index1].Angle.YinDegree.Equals(0))
+            {
+                if (SupportData.ListSecondrySuppo[Index0].Angle.ZinDegree.Equals(SupportData.ListSecondrySuppo[Index1].Angle.ZinDegree))
+                {
+                    if (Math.Abs(SupportData.ListSecondrySuppo[Index0].Angle.XinDegree) > Math.Abs(SupportData.ListSecondrySuppo[Index1].Angle.XinDegree))
+                    {
+                        if (Math.Abs(SupportData.ListSecondrySuppo[Index0].Angle.XinDegree).Equals(90))
+                        {
+                            if (Math.Round(SupportData.ListSecondrySuppo[Index0].Centroid.X) == Math.Round(SupportData.ListSecondrySuppo[Index1].Centroid.X) && SupportData.ListSecondrySuppo[Index0].Centroid.Z > SupportData.ListSecondrySuppo[Index1].Centroid.Z)
+                            {
+
+                                string Orientation = "";
+                                if (!AreCentroidsinLine(SupportData, ref Orientation))
+                                {
+
+
+                                }
+                                else
+                                {
+
+                                    SupportData.SupportType = "Support34";
+                                    SupportData.ListSecondrySuppo[Index0].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[Index1].PartDirection = "Ver";
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(SupportData.ListSecondrySuppo[Index1].Angle.XinDegree).Equals(90))
+                        {
+                            if (Math.Round(SupportData.ListSecondrySuppo[Index0].Centroid.X) == Math.Round(SupportData.ListSecondrySuppo[Index1].Centroid.X) && SupportData.ListSecondrySuppo[Index0].Centroid.Z < SupportData.ListSecondrySuppo[Index1].Centroid.Z)
+                            {
+                                string Orientation = "";
+                                if (!AreCentroidsinLine(SupportData, ref Orientation))
+                                {
+
+                                }
+                                else
+                                {
+
+                                    SupportData.SupportType = "Support34";
+                                    SupportData.ListSecondrySuppo[Index1].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[Index0].PartDirection = "Ver";
+                                    return true;
+                                }
+
+
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else if (Math.Round(Math.Abs((SupportData.ListSecondrySuppo[0].Angle.ZinDegree) - (SupportData.ListSecondrySuppo[1].Angle.ZinDegree))).Equals(180))
+                {
+                    if (Math.Abs(SupportData.ListSecondrySuppo[0].Angle.XinDegree) > Math.Abs(SupportData.ListSecondrySuppo[1].Angle.XinDegree))
+                    {
+                        if (Math.Abs(SupportData.ListSecondrySuppo[0].Angle.XinDegree).Equals(90))
+                        {
+                            if (Math.Round(SupportData.ListSecondrySuppo[0].Centroid.X) == Math.Round(SupportData.ListSecondrySuppo[1].Centroid.X) && SupportData.ListSecondrySuppo[0].Centroid.Z > SupportData.ListSecondrySuppo[1].Centroid.Z)
+                            {
+
+                                string Orientation = "";
+                                if (!AreCentroidsinLine(SupportData, ref Orientation))
+                                {
+
+                                    System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    Vec1.X = (SupportData.ListPrimarySuppo[0].Centroid.X - SupportData.ListSecondrySuppo[0].Centroid.X);
+                                    Vec1.Y = (SupportData.ListPrimarySuppo[0].Centroid.Y - SupportData.ListSecondrySuppo[0].Centroid.Y);
+                                    Vec1.Z = 0;
+
+                                    Vec2.X = (SupportData.ListSecondrySuppo[1].EndPt[0] - SupportData.ListSecondrySuppo[1].StPt[0]);
+                                    Vec2.Y = (SupportData.ListSecondrySuppo[1].EndPt[1] - SupportData.ListSecondrySuppo[1].StPt[1]);
+                                    Vec2.Z = (SupportData.ListSecondrySuppo[1].EndPt[2] - SupportData.ListSecondrySuppo[1].StPt[2]);
+
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(-90))
+                                    {
+                                        SupportData.SupportType = "Support16";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(90))
+                                    {
+                                        SupportData.SupportType = "Support15";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                }
+                                else
+                                {
+
+                                    SupportData.SupportType = "Support2";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                    return true;
+                                }
+
+
+                            }
+                            else
+                            {
+
+                                var MidPt = FindPerpendicularFoot(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].EndPt), SupportData.ListSecondrySuppo[0].StPt, SupportData.ListSecondrySuppo[0].EndPt);
+
+                                double Dist1 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].StPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist2 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].EndPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist3 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].StPt), GetPt3DFromArray(SupportData.ListSecondrySuppo[0].EndPt));
+
+                                if (Math.Round(Dist3).Equals(Math.Round(Dist2 + Dist1)))
+                                {
+
+                                    SupportData.SupportType = "Support24";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                    return true;
+                                }
+
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(SupportData.ListSecondrySuppo[1].Angle.XinDegree).Equals(90))
+                        {
+                            if (Math.Round(SupportData.ListSecondrySuppo[0].Centroid.X) == Math.Round(SupportData.ListSecondrySuppo[1].Centroid.X) && SupportData.ListSecondrySuppo[0].Centroid.Z < SupportData.ListSecondrySuppo[1].Centroid.Z)
+                            {
+                                string Orientation = "";
+                                if (!AreCentroidsinLine(SupportData, ref Orientation))
+                                {
+
+                                    System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    Vec1.X = (SupportData.ListPrimarySuppo[0].Centroid.X - SupportData.ListSecondrySuppo[0].Centroid.X);
+                                    Vec1.Y = (SupportData.ListPrimarySuppo[0].Centroid.Y - SupportData.ListSecondrySuppo[0].Centroid.Y);
+                                    Vec1.Z = 0;
+
+                                    Vec2.X = (SupportData.ListSecondrySuppo[0].EndPt[0] - SupportData.ListSecondrySuppo[0].StPt[0]);
+                                    Vec2.Y = (SupportData.ListSecondrySuppo[0].EndPt[1] - SupportData.ListSecondrySuppo[0].StPt[1]);
+                                    Vec2.Z = (SupportData.ListSecondrySuppo[0].EndPt[2] - SupportData.ListSecondrySuppo[0].StPt[2]);
+
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(-90))
+                                    {
+                                        SupportData.SupportType = "Support16";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(90))
+                                    {
+                                        SupportData.SupportType = "Support15";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                }
+                                else
+                                {
+
+                                    SupportData.SupportType = "Support2";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Ver";
+                                    return true;
+                                }
+
+
+                            }
+                            else
+                            {
+
+                                var MidPt = FindPerpendicularFoot(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].EndPt), SupportData.ListSecondrySuppo[1].StPt, SupportData.ListSecondrySuppo[1].EndPt);
+
+                                double Dist1 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].StPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist2 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].EndPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist3 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].StPt), GetPt3DFromArray(SupportData.ListSecondrySuppo[1].EndPt));
+
+                                if (Math.Round(Dist3).Equals(Math.Round(Dist2 + Dist1)))
+                                {
+
+                                    SupportData.SupportType = "Support24";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                    return true;
+                                }
+
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else if (Math.Round(Math.Abs((SupportData.ListSecondrySuppo[0].Angle.ZinDegree) - (SupportData.ListSecondrySuppo[1].Angle.ZinDegree))).Equals(90))
+                {
+                    if (Math.Abs(SupportData.ListSecondrySuppo[0].Angle.XinDegree) < Math.Abs(SupportData.ListSecondrySuppo[1].Angle.XinDegree))
+                    {
+                        if (Math.Abs(SupportData.ListSecondrySuppo[0].Angle.XinDegree).Equals(90))
+                        {
+                            if (Math.Round(SupportData.ListSecondrySuppo[0].Centroid.Y) == Math.Round(SupportData.ListSecondrySuppo[1].Centroid.Y) && SupportData.ListSecondrySuppo[0].Centroid.Z < SupportData.ListSecondrySuppo[1].Centroid.Z)
+                            {
+
+                                string Orientation = "";
+                                if (!AreCentroidsinLine(SupportData, ref Orientation))
+                                {
+
+                                    System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    Vec1.X = (SupportData.ListPrimarySuppo[0].Centroid.X - SupportData.ListSecondrySuppo[0].Centroid.X);
+                                    Vec1.Y = (SupportData.ListPrimarySuppo[0].Centroid.Y - SupportData.ListSecondrySuppo[0].Centroid.Y);
+                                    Vec1.Z = 0;
+
+                                    Vec2.X = (SupportData.ListSecondrySuppo[1].EndPt[0] - SupportData.ListSecondrySuppo[1].StPt[0]);
+                                    Vec2.Y = (SupportData.ListSecondrySuppo[1].EndPt[1] - SupportData.ListSecondrySuppo[1].StPt[1]);
+                                    Vec2.Z = (SupportData.ListSecondrySuppo[1].EndPt[2] - SupportData.ListSecondrySuppo[1].StPt[2]);
+
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(-90))
+                                    {
+                                        SupportData.SupportType = "Support16";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(90))
+                                    {
+                                        SupportData.SupportType = "Support23";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                }
+                                else
+                                {
+
+                                    SupportData.SupportType = "Support2";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                    return true;
+                                }
+
+
+                            }
+                            else
+                            {
+
+                                var MidPt = FindPerpendicularFoot(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].EndPt), SupportData.ListSecondrySuppo[0].StPt, SupportData.ListSecondrySuppo[0].EndPt);
+
+                                double Dist1 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].StPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist2 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].EndPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist3 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].StPt), GetPt3DFromArray(SupportData.ListSecondrySuppo[0].EndPt));
+
+                                if (Math.Round(Dist3).Equals(Math.Round(Dist2 + Dist1)))
+                                {
+
+                                    SupportData.SupportType = "Support24";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                    return true;
+                                }
+
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(SupportData.ListSecondrySuppo[1].Angle.XinDegree).Equals(90))
+                        {
+                            if (Math.Round(SupportData.ListSecondrySuppo[0].Centroid.Y) == Math.Round(SupportData.ListSecondrySuppo[1].Centroid.Y) && SupportData.ListSecondrySuppo[0].Centroid.Z > SupportData.ListSecondrySuppo[1].Centroid.Z)
+                            {
+                                string Orientation = "";
+                                if (!AreCentroidsinLine(SupportData, ref Orientation))
+                                {
+
+                                    System.Windows.Media.Media3D.Vector3D Vec1 = new System.Windows.Media.Media3D.Vector3D(1, 0, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec2 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    System.Windows.Media.Media3D.Vector3D Vec3 = new System.Windows.Media.Media3D.Vector3D(0, 1, 0);
+                                    Vec1.X = (SupportData.ListPrimarySuppo[0].Centroid.X - SupportData.ListSecondrySuppo[0].Centroid.X);
+                                    Vec1.Y = (SupportData.ListPrimarySuppo[0].Centroid.Y - SupportData.ListSecondrySuppo[0].Centroid.Y);
+                                    Vec1.Z = 0;
+
+                                    Vec2.X = (SupportData.ListSecondrySuppo[0].EndPt[0] - SupportData.ListSecondrySuppo[0].StPt[0]);
+                                    Vec2.Y = (SupportData.ListSecondrySuppo[0].EndPt[1] - SupportData.ListSecondrySuppo[0].StPt[1]);
+                                    Vec2.Z = (SupportData.ListSecondrySuppo[0].EndPt[2] - SupportData.ListSecondrySuppo[0].StPt[2]);
+
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(-180))
+                                    {
+                                        SupportData.SupportType = "Support16";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                    if (Math.Round(Calculate.ConvertRadiansToDegrees(Calculate.GetSignedRotation(Vec2, Vec1, Vec3))).Equals(180))
+                                    {
+                                        SupportData.SupportType = "Support23";
+                                        SupportData.ListSecondrySuppo[1].PartDirection = "Hor";
+                                        SupportData.ListSecondrySuppo[0].PartDirection = "Ver";
+                                        return true;
+                                    }
+                                }
+                                else
+                                {
+
+                                    SupportData.SupportType = "Support2";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Ver";
+                                    return true;
+                                }
+
+
+                            }
+                            else
+                            {
+
+                                var MidPt = FindPerpendicularFoot(GetPt3DFromArray(SupportData.ListSecondrySuppo[0].EndPt), SupportData.ListSecondrySuppo[1].StPt, SupportData.ListSecondrySuppo[1].EndPt);
+
+                                double Dist1 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].StPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist2 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].EndPt), GetPt3DFromPoint3D(MidPt));
+
+                                double Dist3 = Calculate.DistPoint(GetPt3DFromArray(SupportData.ListSecondrySuppo[1].StPt), GetPt3DFromArray(SupportData.ListSecondrySuppo[1].EndPt));
+
+                                if (Math.Round(Dist3).Equals(Math.Round(Dist2 + Dist1)))
+                                {
+
+                                    SupportData.SupportType = "Support24";
+                                    SupportData.ListSecondrySuppo[0].PartDirection = "Hor";
+                                    SupportData.ListSecondrySuppo[1].PartDirection = "Ver";
+                                    return true;
+                                }
+
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (SupportData.ListSecondrySuppo.Any(Y => Y.Size.ToLower().Contains("angle")))
+            {
+                string Orientation = "";
+                if (AreCentroidsinLine(SupportData, ref Orientation))
+                {
+
+                }
+
+
+            }
+
+            return false;
+        }
         bool CheckforTypeSupport2(ref SupportData SupportData)
         {
             if (SupportData.ListSecondrySuppo[0].Angle.YinDegree.Equals(0) && SupportData.ListSecondrySuppo[1].Angle.YinDegree.Equals(0))
@@ -3766,16 +6789,16 @@ namespace Project1.Support2D
                 }
             }
 
-            if (SupportData.ListSecondrySuppo.Any(Y => Y.Size.ToLower().Contains("angle")))
-            {
-                string Orientation = "";
-                if (AreCentroidsinLine(SupportData, ref Orientation))
-                {
+            //if (SupportData.ListSecondrySuppo.Any(Y => Y.Size.ToLower().Contains("angle")))
+            //{
+            //    string Orientation = "";
+            //    if (AreCentroidsinLine(SupportData, ref Orientation))
+            //    {
 
-                }
+            //    }
 
 
-            }
+            //}
 
             return false;
         }
@@ -3903,7 +6926,7 @@ namespace Project1.Support2D
 
             for (int inx = 0; inx < ListXPt.Count; inx++)
             {
-                if (Math.Abs(ListXPt[0] - ListXPt[inx]) > 1)
+                if (Math.Abs(ListXPt[0] - ListXPt[inx]) > 5)
                 {
                     AllXAreinLine = false;
                     break;
@@ -3912,7 +6935,7 @@ namespace Project1.Support2D
 
             for (int inx = 0; inx < ListYPt.Count; inx++)
             {
-                if (Math.Abs(ListYPt[0] - ListYPt[inx]) > 1)
+                if (Math.Abs(ListYPt[0] - ListYPt[inx]) > 5)
                 {
                     AllYAreinLine = false;
                     break;
@@ -3921,7 +6944,7 @@ namespace Project1.Support2D
 
             for (int inx = 0; inx < ListZPt.Count; inx++)
             {
-                if (Math.Abs(ListZPt[0] - ListZPt[inx]) > 1)
+                if (Math.Abs(ListZPt[0] - ListZPt[inx]) > 5)
                 {
                     AllZAreinLine = false;
                     break;
@@ -3988,7 +7011,7 @@ namespace Project1.Support2D
                 }
             }
 
-            if (PPartCentroids != null && SPartCentroids.Count > 0)
+            if (SPartCentroids != null && SPartCentroids.Count > 0)
             {
                 foreach (Pt3D Pnt in SPartCentroids)
                 {
@@ -4033,7 +7056,10 @@ namespace Project1.Support2D
             {
                 foreach (var BPart in SData.ListSecondrySuppo)
                 {
-                    Centroids.Add(BPart.Centroid);
+                    if (!BPart.IsGussetplate)
+                    {
+                        Centroids.Add(BPart.Centroid);
+                    }
                 }
 
                 return Centroids;
@@ -4102,6 +7128,62 @@ namespace Project1.Support2D
             string Path = System.IO.Path.GetDirectoryName(Filename);
             newDb.SaveAs(Path + "2d.dwg", DwgVersion.Current);
             Document2D.CloseAndSave(Path + "2d.dwg");
+        }
+
+        public void CreateConcreteBOM()
+        {
+            Document AcadDoc = null;
+            Database AcadDatabase = null;
+            Document Document2D = null;
+
+            AcadDoc = Autodesk.AutoCAD.ApplicationServices.Application.DocumentManager.MdiActiveDocument;
+            string Filename = AcadDoc.Name;
+            AcadDatabase = AcadDoc.Database;
+
+            using (AcadDoc.LockDocument())
+            {
+                using (Transaction AcadTransaction = AcadDatabase.TransactionManager.StartTransaction())
+                {
+                    try
+                    {
+                        DocumentCollection AcadDocumentCollection = Application.DocumentManager;
+                        Document2D = AcadDocumentCollection.Add("acad.dwt");
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+
+            //Creates 2D View
+            Create2DForConcreteBOM(Document2D);
+            //Create2DView(Document2D);
+            Database newDb = AcadDatabase.Wblock();
+            string Path = System.IO.Path.GetDirectoryName(Filename);
+            newDb.SaveAs(Path + "ConcreteBOM.dwg", DwgVersion.Current);
+            Document2D.CloseAndSave(Path + "ConcreteBOM.dwg");
+        }
+
+        string GetSizeofPlate(List<FaceData> ListfaceData)
+        {
+            string Size = "";
+            List<double> ListEdgeLen = new List<double>();
+            foreach (var face in ListfaceData)
+            {
+                foreach (var Edge in face.ListlinearEdge)
+                {
+                    ListEdgeLen.Add(Edge.EdgeLength);
+                }
+            }
+
+            ListEdgeLen.Sort();
+
+            if (ListEdgeLen.Count == 24)
+            {
+                Size = Math.Abs(ListEdgeLen[16]).ToString() + "x" + Math.Abs(ListEdgeLen[8]).ToString() + "x" + Math.Abs(ListEdgeLen[0]).ToString();
+            }
+
+            return Size;
         }
         void Create2DView(Document Document2D)
         {
@@ -4225,6 +7307,8 @@ namespace Project1.Support2D
                 double boxht = 12734.3388;
 
                 double tracex = 619.1209;
+
+                string suptype = ListCentalSuppoData[0].SupportType;
 
                 Dictionary<string, double> DicWtData = new Dictionary<string, double>();
                 DicWtData["ISMC75"] = 7.14;
@@ -4357,69 +7441,146 @@ namespace Project1.Support2D
                 CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support68");
                 CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support69");
                 CreateFullBlock(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, "Support70");
-                
+
 
 
 
                 Dictionary<string, List<double>> ListBomData = new Dictionary<string, List<double>>();
 
+                Dictionary<string, int> UClampData = new Dictionary<string, int>();
+
+                int AnchorHoles = 0;
                 foreach (var SData in ListCentalSuppoData)
                 {
-                    foreach (var SType in SData.ListSecondrySuppo)
+                    if (SData.SupportType != null)
                     {
-                        if (SType.SupportName != null && SType.SupportName.ToLower().Equals("plate"))
+                        foreach (var SType in SData.ListSecondrySuppo)
                         {
-                            //GetLBHFromFace(SType.ListfaceData);
+                            if (SType.SupportName != null && SType.SupportName.ToLower().Equals("plate") && SType.IsGussetplate)
+                            {
+                                string Size = "GUSSET PLATE";
+
+                                int count = 1;
+                                if (Size != null && Size.Length > 0)
+                                {
+                                    if (UClampData.ContainsKey(Size))
+                                    {
+                                        count = UClampData[Size];
+                                        count++;
+                                        UClampData[Size] = count;
+                                    }
+                                    else
+                                    {
+                                        UClampData[Size] = count;
+                                    }
+                                }
+                            }
+                            else if (SType.Size != null && SType.Size.ToLower().Contains("web"))
+                            {
+                                string Size = GettheISMC(SType.Size);
+                                if (Size == "")
+                                {
+                                    Size = "ISMC" + CSECTIONSIZE(SType.Size);
+                                }
+
+                                List<double> Temp = new List<double>();
+                                double Dist = Calculate.DistPoint(GetPt3DFromArray(SType.StPt), GetPt3DFromArray(SType.EndPt));
+
+                                if (ListBomData.ContainsKey(Size))
+                                {
+                                    Temp = ListBomData[Size];
+                                    Temp.Add(Dist);
+
+                                    ListBomData[Size] = Temp;
+                                }
+                                else
+                                {
+                                    Temp.Add(Dist);
+
+                                    ListBomData[Size] = Temp;
+                                }
+                            }
                         }
-                        else if (SType.Size != null && SType.Size.ToLower().Contains("web"))
+                        foreach (var PType in SData.ListPrimarySuppo)
                         {
-                            string Size = GettheISMC(SType.Size);
-                            if (Size == "")
+                            if (PType.SupportName.ToLower().Contains("clamp"))
                             {
-                                Size = "ISMC" + CSECTIONSIZE(SType.Size);
+                                string Size = PType.Size + "NB";
+
+                                int count = 1;
+                                if (Size != null && Size.Length > 0)
+                                {
+                                    if (UClampData.ContainsKey(Size))
+                                    {
+                                        count = UClampData[Size];
+                                        count++;
+                                        UClampData[Size] = count;
+                                    }
+                                    else
+                                    {
+                                        UClampData[Size] = count;
+                                    }
+                                }
                             }
+                        }
 
-                            List<double> Temp = new List<double>();
-                            double Dist = Calculate.DistPoint(GetPt3DFromArray(SType.StPt), GetPt3DFromArray(SType.EndPt));
-
-                            if (ListBomData.ContainsKey(Size))
+                        foreach (var CType in SData.ListConcreteData)
+                        {
+                            if (CType.IsAnchor)
                             {
-                                Temp = ListBomData[Size];
-                                Temp.Add(Dist);
+                                string Size = GetSizeofPlate(CType.ListfaceData);
 
-                                ListBomData[Size] = Temp;
+                                if (Size != null && Size.Length > 0 && CType.NoOfAnchoreHole > 0)
+                                {
+                                    Size = "ANCHOR PLATE" + Size + " THK";
+                                    int count = 1;
+                                    if (Size != null && Size.Length > 0)
+                                    {
+                                        if (UClampData.ContainsKey(Size))
+                                        {
+                                            count = UClampData[Size];
+                                            count++;
+                                            UClampData[Size] = count;
+                                        }
+                                        else
+                                        {
+                                            UClampData[Size] = count;
+                                        }
+                                    }
+                                }
+                                AnchorHoles = AnchorHoles + CType.NoOfAnchoreHole;
                             }
-                            else
-                            {
-                                Temp.Add(Dist);
+                        }
 
-                                ListBomData[Size] = Temp;
-                            }
+                        if (AnchorHoles > 0)
+                        {
+                            UClampData["ANCHOR FASTNER"] = AnchorHoles;
                         }
                     }
                 }
 
                 Table BomTable = new Table();
 
-                BomTable.SetSize(ListBomData.Count + 3, 8);
-                string[,] str = new string[ListBomData.Count + 3, 8];
+                BomTable.SetSize(UClampData.Count + ListBomData.Count + 3, 9);
+                string[,] str = new string[UClampData.Count + ListBomData.Count + 3, 9];
 
                 str[0, 0] = "BOM";
                 str[1, 0] = "SR. No.";
                 str[1, 1] = "ITEM DESCRIPTION";
                 str[1, 2] = "MATERIAL";
                 str[1, 3] = "QTY";
-                str[1, 4] = "WEIGHT(KG)";
-                str[1, 5] = "PAINTING AREA (METER sq.)";
-                str[1, 6] = "Remark";
+                str[1, 4] = "UOM";
+                str[1, 5] = "WEIGHT(KG)";
+                str[1, 6] = "PAINTING AREA (METER sq.)";
+                str[1, 7] = "Remark";
 
-                Autodesk.AutoCAD.DatabaseServices.CellRange rowFirst = Autodesk.AutoCAD.DatabaseServices.CellRange.Create(BomTable, 0, 0, 0, 7);
+                Autodesk.AutoCAD.DatabaseServices.CellRange rowFirst = Autodesk.AutoCAD.DatabaseServices.CellRange.Create(BomTable, 0, 0, 0, 8);
                 BomTable.MergeCells(rowFirst);
 
                 for (int iCo1 = 0; iCo1 < BomTable.Rows.Count; iCo1++)
                     BomTable.Rows[iCo1].Height = 400;
 
-                for (int iCo1 = 0; iCo1 < 8; iCo1++)
+                for (int iCo1 = 0; iCo1 < 9; iCo1++)
                 {
                     if (iCo1 == 0)
                     {
@@ -4429,11 +7590,11 @@ namespace Project1.Support2D
                     {
                         BomTable.Columns[iCo1].Width = 2500;
                     }
-                    else if (iCo1 == 3 || iCo1 == 4 || iCo1 == 5)
+                    else if (iCo1 == 3 || iCo1 == 5 || iCo1 == 6)
                     {
                         BomTable.Columns[iCo1].Width = 1500;
                     }
-                    else if (iCo1 == 7)
+                    else if (iCo1 == 8)
                     {
                         BomTable.Columns[iCo1].Width = 1;
                     }
@@ -4454,7 +7615,7 @@ namespace Project1.Support2D
 
                 for (int inx = 0; inx < ListBomData.Count; inx++)
                 {
-                    for (int iCount1 = 0; iCount1 < 7; iCount1++)
+                    for (int iCount1 = 0; iCount1 < 8; iCount1++)
                     {
                         if (iCount1 == 0)
                             str[iNo, iCount1] = (inx + 1).ToString();
@@ -4463,18 +7624,46 @@ namespace Project1.Support2D
                         if (iCount1 == 2)
                             str[iNo, iCount1] = "IS:2062 Gr.E250A";
                         if (iCount1 == 3)
-                            str[iNo, iCount1] = (Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1)).ToString() + " M";
+                            str[iNo, iCount1] = (Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1)).ToString();
                         if (iCount1 == 4)
-                            str[iNo, iCount1] = (Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value) * DicWtData[ListBomData.ElementAt(inx).Key], 2)).ToString() + " Kg";
+                            str[iNo, iCount1] = "M";
                         if (iCount1 == 5)
-                            str[iNo, iCount1] = (Math.Round((DicSurfaceAData.ContainsKey(ListBomData.ElementAt(inx).Key) ? DicSurfaceAData[ListBomData.ElementAt(inx).Key] : 0) * GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1)).ToString() + "  m2/m";
-
+                            str[iNo, iCount1] = (Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value) * DicWtData[ListBomData.ElementAt(inx).Key], 2)).ToString();
                         if (iCount1 == 6)
+                            str[iNo, iCount1] = (Math.Round((DicSurfaceAData.ContainsKey(ListBomData.ElementAt(inx).Key) ? DicSurfaceAData[ListBomData.ElementAt(inx).Key] : 0) * GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1)).ToString();
+
+                        if (iCount1 == 7)
                             str[iNo, iCount1] = " ";
                     }
                     Weight = Weight + Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value) * DicWtData[ListBomData.ElementAt(inx).Key], 2);
 
                     SurfaceArea = SurfaceArea + Math.Round((DicSurfaceAData.ContainsKey(ListBomData.ElementAt(inx).Key) ? DicSurfaceAData[ListBomData.ElementAt(inx).Key] : 0) * GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1);
+                    iNo++;
+                }
+
+                for (int inx = 0; inx < UClampData.Count; inx++)
+                {
+                    for (int iCount1 = 0; iCount1 < 8; iCount1++)
+                    {
+                        if (iCount1 == 0)
+                            str[iNo, iCount1] = (iNo - 1).ToString();
+                        if (iCount1 == 1)
+                            str[iNo, iCount1] = UClampData.ElementAt(inx).Key.ToUpper().Contains("NB") ? "'U'" + "  Clamp" + UClampData.ElementAt(inx).Key : UClampData.ElementAt(inx).Key;
+                        if (iCount1 == 2)
+                            str[iNo, iCount1] = "IS:2062 Gr.E250A";
+                        if (iCount1 == 3)
+                            str[iNo, iCount1] = (UClampData.ElementAt(inx).Value).ToString();
+                        if (iCount1 == 4)
+                            str[iNo, iCount1] = UClampData.ElementAt(inx).Value == 1 ? "NO" : "NOS";
+                        if (iCount1 == 5)
+                            str[iNo, iCount1] = " ";
+                        if (iCount1 == 6)
+                            str[iNo, iCount1] = " ";
+
+                        if (iCount1 == 7)
+                            str[iNo, iCount1] = " ";
+                    }
+
                     iNo++;
                 }
 
@@ -4486,13 +7675,13 @@ namespace Project1.Support2D
                         BomTable.Cells[i, 0].Contents[0].TextString = "{\\fArial;" + "Total" + "}";
                         BomTable.Cells[i, 0].Alignment = CellAlignment.MiddleCenter;
 
-                        BomTable.Cells[i, 4].TextHeight = 140;
-                        BomTable.Cells[i, 4].Contents[0].TextString = "{\\fArial;" + Weight.ToString() + "}";
-                        BomTable.Cells[i, 4].Alignment = CellAlignment.MiddleCenter;
-
                         BomTable.Cells[i, 5].TextHeight = 140;
-                        BomTable.Cells[i, 5].Contents[0].TextString = "{\\fArial;" + SurfaceArea.ToString() + "}";
+                        BomTable.Cells[i, 5].Contents[0].TextString = "{\\fArial;" + Weight.ToString() + "}";
                         BomTable.Cells[i, 5].Alignment = CellAlignment.MiddleCenter;
+
+                        BomTable.Cells[i, 6].TextHeight = 140;
+                        BomTable.Cells[i, 6].Contents[0].TextString = "{\\fArial;" + SurfaceArea.ToString() + "}";
+                        BomTable.Cells[i, 6].Alignment = CellAlignment.MiddleCenter;
                     }
                     else
                     {
@@ -4511,7 +7700,6 @@ namespace Project1.Support2D
                 BomTable.GenerateLayout();
                 AcadBlockTableRecord.AppendEntity(BomTable);
                 AcadTransaction.AddNewlyCreatedDBObject(BomTable, true);
-
 
                 //Point3d startPoint = new Point3d(0, 0, 0);
                 //Point3d endPoint = new Point3d(50, 50, 0);
@@ -4552,6 +7740,408 @@ namespace Project1.Support2D
 
                 //SupporSpecData Sesupport = SecondSupport.FirstOrDefault();*/
                 AddDimStyleToDimensions();
+                AcadTransaction.Commit();
+            }
+        }
+
+
+        void Create2DForConcreteBOM(Document Document2D)
+        {
+            Database AcadDatabase = Document2D.Database;
+            Transaction AcadTransaction = null;
+            BlockTable AcadBlockTable = null;
+            BlockTableRecord AcadBlockTableRecord = null;
+
+            using (Document2D.LockDocument())
+            {
+                AcadTransaction = AcadDatabase.TransactionManager.StartTransaction();
+
+                AcadBlockTable = AcadTransaction.GetObject(AcadDatabase.BlockTableId,
+                                                               OpenMode.ForRead) as BlockTable;
+
+                AcadBlockTableRecord = AcadTransaction.GetObject(AcadBlockTable[BlockTableRecord.ModelSpace],
+                                                OpenMode.ForWrite) as BlockTableRecord;
+
+
+                SupportData firstSupport = ListCentalSuppoData.FirstOrDefault();
+
+                // gets the template
+                // CopyPasteTemplateFile("Temp1", Document2D, 0);
+
+                CopyAndModifyEntities(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Mtemp", 0, 0, 1);
+
+                //GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,0);
+
+                //logic for adding block      
+
+                //9869.9480;                  
+                //67542.6980;
+                //adding blocks here
+
+                double boxlen = 17299.3016;
+                double boxht = 12734.3388;
+
+                double tracex = 619.1209;
+
+                string suptype = ListCentalSuppoData[0].SupportType;
+
+                Dictionary<string, double> DicWtData = new Dictionary<string, double>();
+                DicWtData["ISMC75"] = 7.14;
+                DicWtData["ISMC100"] = 9.56;
+                DicWtData["ISMC125"] = 13.1;
+                DicWtData["ISMC125*"] = 13.7;
+                DicWtData["ISMC150"] = 16.8;
+                DicWtData["ISMC150*"] = 17.7;
+                DicWtData["ISMC175"] = 19.6;
+                DicWtData["ISMC175*"] = 22.7;
+                DicWtData["ISMC200"] = 22.3;
+                DicWtData["ISMC200*"] = 24.3;
+                DicWtData["ISMC225"] = 26.1;
+                DicWtData["ISMC225*"] = 30.7;
+                DicWtData["ISMC250"] = 30.6;
+                DicWtData["ISMC250*"] = 34.2;
+                DicWtData["ISMC250**"] = 36.1;
+                DicWtData["ISMC300"] = 36.3;
+                DicWtData["ISMC300*"] = 41.5;
+                DicWtData["ISMC300**"] = 46.2;
+                DicWtData["ISMC350"] = 42.7;
+                DicWtData["ISMC400"] = 50.1;
+                Dictionary<string, double> DicSurfaceAData = new Dictionary<string, double>();
+
+
+                DicSurfaceAData["ISMC75"] = 0.31;
+                DicSurfaceAData["ISMC100"] = 0.40;
+                DicSurfaceAData["ISMC125"] = 0.51;
+                DicSurfaceAData["ISMC150"] = 0.60;
+                DicSurfaceAData["ISMC200"] = 0.70;
+                DicSurfaceAData["ISMC225"] = 0.77;
+                DicSurfaceAData["ISMC250"] = 0.82;
+                DicSurfaceAData["ISMC300"] = 0.96;
+                DicSurfaceAData["ISMC400"] = 1.20;
+
+
+                //for valcuating datum level
+                List<double> datum = new List<double>();
+                //string suptype = ListCentalSuppoData[0].SupportType;
+                for (int i = 0; i < ListCentalSuppoData.Count; i++)
+                {
+                    foreach (SupporSpecData sp in ListCentalSuppoData[i].ListConcreteData)
+                    {
+                        datum.Add(sp.Boundingboxmin.Z);
+                    }
+                    AddConcretBOM(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
+                    //datum.Add(ListCentalSuppoData[i].ListConcreteData[0].Boundingboxmin.Z);
+                }
+
+                if (datum.Count > 0)
+                {
+                    datum_level = MillimetersToMeters(Math.Round(datum.Min()));
+                }
+
+
+
+
+
+
+
+                Dictionary<string, List<double>> ListBomData = new Dictionary<string, List<double>>();
+
+                Dictionary<string, int> UClampData = new Dictionary<string, int>();
+
+                int AnchorHoles = 0;
+                foreach (var SData in ListCentalSuppoData)
+                {
+                    if (SData.SupportType != null)
+                    {
+                        foreach (var SType in SData.ListSecondrySuppo)
+                        {
+                            if (SType.SupportName != null && SType.SupportName.ToLower().Equals("plate") && SType.IsGussetplate)
+                            {
+                                string Size = "GUSSET PLATE";
+
+                                int count = 1;
+                                if (Size != null && Size.Length > 0)
+                                {
+                                    if (UClampData.ContainsKey(Size))
+                                    {
+                                        count = UClampData[Size];
+                                        count++;
+                                        UClampData[Size] = count;
+                                    }
+                                    else
+                                    {
+                                        UClampData[Size] = count;
+                                    }
+                                }
+                            }
+                            else if (SType.Size != null && SType.Size.ToLower().Contains("web"))
+                            {
+                                string Size = GettheISMC(SType.Size);
+                                if (Size == "")
+                                {
+                                    Size = "ISMC" + CSECTIONSIZE(SType.Size);
+                                }
+
+                                List<double> Temp = new List<double>();
+                                double Dist = Calculate.DistPoint(GetPt3DFromArray(SType.StPt), GetPt3DFromArray(SType.EndPt));
+
+                                if (ListBomData.ContainsKey(Size))
+                                {
+                                    Temp = ListBomData[Size];
+                                    Temp.Add(Dist);
+
+                                    ListBomData[Size] = Temp;
+                                }
+                                else
+                                {
+                                    Temp.Add(Dist);
+
+                                    ListBomData[Size] = Temp;
+                                }
+                            }
+                        }
+                        foreach (var PType in SData.ListPrimarySuppo)
+                        {
+                            if (PType.SupportName.ToLower().Contains("clamp"))
+                            {
+                                string Size = PType.Size + "NB";
+
+                                int count = 1;
+                                if (Size != null && Size.Length > 0)
+                                {
+                                    if (UClampData.ContainsKey(Size))
+                                    {
+                                        count = UClampData[Size];
+                                        count++;
+                                        UClampData[Size] = count;
+                                    }
+                                    else
+                                    {
+                                        UClampData[Size] = count;
+                                    }
+                                }
+                            }
+                        }
+
+                        foreach (var CType in SData.ListConcreteData)
+                        {
+                            if (CType.IsAnchor)
+                            {
+                                string Size = GetSizeofPlate(CType.ListfaceData);
+
+                                if (Size != null && Size.Length > 0 && CType.NoOfAnchoreHole > 0)
+                                {
+                                    Size = "ANCHOR PLATE" + Size + " THK";
+                                    int count = 1;
+                                    if (Size != null && Size.Length > 0)
+                                    {
+                                        if (UClampData.ContainsKey(Size))
+                                        {
+                                            count = UClampData[Size];
+                                            count++;
+                                            UClampData[Size] = count;
+                                        }
+                                        else
+                                        {
+                                            UClampData[Size] = count;
+                                        }
+                                    }
+                                }
+                                AnchorHoles = AnchorHoles + CType.NoOfAnchoreHole;
+                            }
+                        }
+
+                        if (AnchorHoles > 0)
+                        {
+                            UClampData["ANCHOR FASTNER"] = AnchorHoles;
+                        }
+                    }
+                }
+
+                Table BomTable = new Table();
+
+                BomTable.SetSize(UClampData.Count + ListBomData.Count + 3, 9);
+                string[,] str = new string[UClampData.Count + ListBomData.Count + 3, 9];
+
+                str[0, 0] = "BOM";
+                str[1, 0] = "SR. No.";
+                str[1, 1] = "ITEM DESCRIPTION";
+                str[1, 2] = "MATERIAL";
+                str[1, 3] = "QTY";
+                str[1, 4] = "UOM";
+                str[1, 5] = "WEIGHT(KG)";
+                str[1, 6] = "PAINTING AREA (METER sq.)";
+                str[1, 7] = "Remark";
+
+                Autodesk.AutoCAD.DatabaseServices.CellRange rowFirst = Autodesk.AutoCAD.DatabaseServices.CellRange.Create(BomTable, 0, 0, 0, 8);
+                BomTable.MergeCells(rowFirst);
+
+                for (int iCo1 = 0; iCo1 < BomTable.Rows.Count; iCo1++)
+                    BomTable.Rows[iCo1].Height = 400;
+
+                for (int iCo1 = 0; iCo1 < 9; iCo1++)
+                {
+                    if (iCo1 == 0)
+                    {
+                        BomTable.Columns[iCo1].Width = 1000;
+                    }
+                    else if (iCo1 == 1 || iCo1 == 2)
+                    {
+                        BomTable.Columns[iCo1].Width = 2500;
+                    }
+                    else if (iCo1 == 3 || iCo1 == 5 || iCo1 == 6)
+                    {
+                        BomTable.Columns[iCo1].Width = 1500;
+                    }
+                    else if (iCo1 == 8)
+                    {
+                        BomTable.Columns[iCo1].Width = 1;
+                    }
+                    else
+                    {
+                        BomTable.Columns[iCo1].Width = 1000;
+                    }
+                }
+
+                double Weight = 0.0;
+                double SurfaceArea = 0.0;
+
+                BomTable.Cells[0, 0].ContentColor = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Black);
+                BomTable.Cells[0, 0].BackgroundColor = Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.Yellow);
+                BomTable.SetContentColor(Autodesk.AutoCAD.Colors.Color.FromColor(System.Drawing.Color.LightGray), 1);
+
+                int iNo = 2;
+
+                for (int inx = 0; inx < ListBomData.Count; inx++)
+                {
+                    for (int iCount1 = 0; iCount1 < 8; iCount1++)
+                    {
+                        if (iCount1 == 0)
+                            str[iNo, iCount1] = (inx + 1).ToString();
+                        if (iCount1 == 1)
+                            str[iNo, iCount1] = ListBomData.ElementAt(inx).Key;
+                        if (iCount1 == 2)
+                            str[iNo, iCount1] = "IS:2062 Gr.E250A";
+                        if (iCount1 == 3)
+                            str[iNo, iCount1] = (Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1)).ToString();
+                        if (iCount1 == 4)
+                            str[iNo, iCount1] = "M";
+                        if (iCount1 == 5)
+                            str[iNo, iCount1] = (Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value) * DicWtData[ListBomData.ElementAt(inx).Key], 2)).ToString();
+                        if (iCount1 == 6)
+                            str[iNo, iCount1] = (Math.Round((DicSurfaceAData.ContainsKey(ListBomData.ElementAt(inx).Key) ? DicSurfaceAData[ListBomData.ElementAt(inx).Key] : 0) * GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1)).ToString();
+
+                        if (iCount1 == 7)
+                            str[iNo, iCount1] = " ";
+                    }
+                    Weight = Weight + Math.Round(GetQuantityofParts(ListBomData.ElementAt(inx).Value) * DicWtData[ListBomData.ElementAt(inx).Key], 2);
+
+                    SurfaceArea = SurfaceArea + Math.Round((DicSurfaceAData.ContainsKey(ListBomData.ElementAt(inx).Key) ? DicSurfaceAData[ListBomData.ElementAt(inx).Key] : 0) * GetQuantityofParts(ListBomData.ElementAt(inx).Value), 1);
+                    iNo++;
+                }
+
+                for (int inx = 0; inx < UClampData.Count; inx++)
+                {
+                    for (int iCount1 = 0; iCount1 < 8; iCount1++)
+                    {
+                        if (iCount1 == 0)
+                            str[iNo, iCount1] = (iNo - 1).ToString();
+                        if (iCount1 == 1)
+                            str[iNo, iCount1] = UClampData.ElementAt(inx).Key.ToUpper().Contains("NB") ? "'U'" + "  Clamp" + UClampData.ElementAt(inx).Key : UClampData.ElementAt(inx).Key;
+                        if (iCount1 == 2)
+                            str[iNo, iCount1] = "IS:2062 Gr.E250A";
+                        if (iCount1 == 3)
+                            str[iNo, iCount1] = (UClampData.ElementAt(inx).Value).ToString();
+                        if (iCount1 == 4)
+                            str[iNo, iCount1] = UClampData.ElementAt(inx).Value == 1 ? "NO" : "NOS";
+                        if (iCount1 == 5)
+                            str[iNo, iCount1] = " ";
+                        if (iCount1 == 6)
+                            str[iNo, iCount1] = " ";
+
+                        if (iCount1 == 7)
+                            str[iNo, iCount1] = " ";
+                    }
+
+                    iNo++;
+                }
+
+                for (int i = 0; i < BomTable.Rows.Count; i++)
+                {
+                    if (i == BomTable.Rows.Count - 1)
+                    {
+                        BomTable.Cells[i, 0].TextHeight = 140;
+                        BomTable.Cells[i, 0].Contents[0].TextString = "{\\fArial;" + "Total" + "}";
+                        BomTable.Cells[i, 0].Alignment = CellAlignment.MiddleCenter;
+
+                        BomTable.Cells[i, 5].TextHeight = 140;
+                        BomTable.Cells[i, 5].Contents[0].TextString = "{\\fArial;" + Weight.ToString() + "}";
+                        BomTable.Cells[i, 5].Alignment = CellAlignment.MiddleCenter;
+
+                        BomTable.Cells[i, 6].TextHeight = 140;
+                        BomTable.Cells[i, 6].Contents[0].TextString = "{\\fArial;" + SurfaceArea.ToString() + "}";
+                        BomTable.Cells[i, 6].Alignment = CellAlignment.MiddleCenter;
+                    }
+                    else
+                    {
+                        for (int j = 0; j < 8; j++)
+                        {
+                            BomTable.Cells[i, j].TextHeight = 140;
+                            BomTable.Cells[i, j].Contents[0].TextString = "{\\fArial;" + str[i, j] + "}";
+                            BomTable.Cells[i, j].Alignment = CellAlignment.MiddleCenter;
+                        }
+                    }
+                }
+
+                BomTable.DeleteColumns(BomTable.Columns.Count - 1, 1);
+                BomTable.Position = new Point3d(tracex, -BomTable.Height + spaceY, 0);
+
+                BomTable.GenerateLayout();
+                AcadBlockTableRecord.AppendEntity(BomTable);
+                AcadTransaction.AddNewlyCreatedDBObject(BomTable, true);
+
+                //Point3d startPoint = new Point3d(0, 0, 0);
+                //Point3d endPoint = new Point3d(50, 50, 0);
+                //Point3d landingPoint = new Point3d(100, 50, 0);
+                //DrawLeader(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Defalut text", startPoint, endPoint, landingPoint);
+                //startPoint = new Point3d(0, 0, 0);
+                //endPoint = new Point3d(500, 500, 0);
+                //DrawLeader(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Defalut text", startPoint, endPoint);
+
+                //}
+
+
+                /*List<SupporSpecData> PrimarySupport = firstSupport.ListPrimarySuppo;
+                SupporSpecData prmsupport = PrimarySupport.FirstOrDefault();
+                double height1 = GetHeight(prmsupport);
+                CreateSecondarySupportBottom(prmsupport, height1, AcadTransaction, AcadBlockTableRecord, AcadDatabase);
+
+                SupporSpecData prmsupport1 = PrimarySupport[1];
+                double newheight = prmsupport1.Boundingboxmax.Z - prmsupport1.Boundingboxmin.Z;
+                CreateSecondarySupportTop(prmsupport1, newheight, height1, AcadTransaction, AcadDatabase, AcadBlockTableRecord);
+
+                //CreateSecondarySupportTopOuter(prmsupport1, newheight, height1, AcadTransaction, AcadDatabase, AcadBlockTableRecord);
+
+                //Create Pedestial support
+                //CreateBottomSupportTop(prmsupport1, newheight, 0, AcadTransaction, AcadDatabase, AcadBlockTableRecord);
+                CreateBottomSupportTopType2(prmsupport1, newheight, 0, AcadTransaction, AcadDatabase, AcadBlockTableRecord);
+
+                //to create primary support
+                List<SupporSpecData> SecondSupport = firstSupport.ListSecondrySuppo;
+                double add = height1 + newheight;
+                //CreatePrimarySupport(SecondSupport, add, AcadBlockTableRecord, AcadTransaction, AcadDatabase);
+                CreatePrimarySupportwithvertex(SecondSupport, add, AcadBlockTableRecord, AcadTransaction, AcadDatabase, prmsupport1);
+
+                //CreateLeaderfromfile(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
+
+
+                CreateSingleLeadrwidtxt(AcadBlockTableRecord, AcadTransaction, AcadDatabase);
+
+                //SupporSpecData Sesupport = SecondSupport.FirstOrDefault();*/
+
+
+
+                //AddDimStyleToDimensions();
                 AcadTransaction.Commit();
             }
         }
@@ -6815,7 +10405,7 @@ namespace Project1.Support2D
                 }
                 if (spaceY > boxht)
                 {
-                    DRS65(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
+                    DRS66(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
                 else
                 {
@@ -6829,7 +10419,7 @@ namespace Project1.Support2D
                     CopyAndModifyEntities(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Mtemp", tracex - 619.1209, 0, 1);
                     tempX += 101659.6570 + 10000;
                     spaceX = tempX - 19068.9248;
-                    DRS65(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
+                    DRS66(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
             }
             else if (SupType == SupportType.Support67.ToString())
@@ -6943,6 +10533,41 @@ namespace Project1.Support2D
                     spaceX = tempX - 19068.9248;
                     DRS70(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, Document2D, ListCentalSuppoData[i].SupportType, i);
                 }
+            }
+        }
+
+        public void AddConcretBOM(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, ref double tracex, double boxlen, double boxht, ref double spaceY, Document Document2D, string SupType, [Optional] int i)
+        {
+            //boxlen = 17299.3016;
+            //value came by scaling block to a height
+            boxlen = 13483.4661;
+            boxht = 12734;
+            if (tracex >= spaceX - boxlen)
+            {
+                spaceY -= boxht;
+                tracex = tempX - 101659.6570 + 619.1209;
+            }
+            if (spaceY > boxht)
+            {
+                BLOCK_WITH_ATTRIBUTES(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Concrete_BOM", ref tracex, ref spaceY, 1, i: i);
+                tracex += boxlen;
+            }
+            else
+            {
+
+                spaceY = 71075.0829;
+                tracex = tempX + 10000 + 619.1209;//gaps
+                                                  // gets the template
+                                                  // GetTemplate(AcadBlockTableRecord, AcadTransaction, AcadDatabase,tracex- 619.1209);
+
+                // CopyPasteTemplateFile("Temp1", Document2D, tracex - 619.1209);
+                BLOCK_WITH_ATTRIBUTES(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Concrete_BOM", ref tracex, ref spaceY, 1, i: i);
+                tracex += boxlen;
+                tempX += 101659.6570 + 10000;
+                spaceX = tempX - 19068.9248;
+
+                CopyAndModifyEntities(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Mtemp", tracex - 619.1209, 0, 1);
+
             }
         }
 
@@ -7131,6 +10756,171 @@ namespace Project1.Support2D
 
                 // var ent = (Entity)AcadTransaction.GetObject(sourceObjectId, OpenMode.ForWrite);
                 //var ent2 = (Entity)AcadTransaction.GetObject(sourceObjectId, OpenMode.ForRead);
+
+                Matrix3d scaleMatrix = Matrix3d.Scaling(scaleFactor, new Point3d(0, 0, 0));
+
+                // Apply the scaling matrix to the entity
+                sourceEntity.TransformBy(scaleMatrix);
+
+                sourceEntity.TransformBy(Matrix3d.Displacement(destvect));
+
+
+                //for rotation
+                if (rotationAngle != 0)
+                {
+                    // Define the rotation transformation
+                    Matrix3d rotationMatrix = Matrix3d.Rotation(rotationAngle, Vector3d.ZAxis, rotationPoint);
+
+                    // Apply the rotation transformation to the entity
+                    sourceEntity.TransformBy(rotationMatrix);
+                }
+
+
+                // For example
+
+                // Add the modified entity to the destination database
+                Entity destEntity = sourceEntity.Clone() as Entity;
+
+                //AcadBlockTableRecord.AppendEntity(destEntity);
+                //tr2.AddNewlyCreatedDBObject(destEntity, true);
+            }
+
+            // Create a new IdMapping object
+            IdMapping mapping = new IdMapping();
+
+            // Clone the source objects to the destination database
+            AcadDatabase.WblockCloneObjects(sourceObjectIds, AcadBlockTableRecord.ObjectId, mapping, DuplicateRecordCloning.Replace, false);
+
+            // Commit the transaction and dispose of the source database
+            tr2.Commit();
+            sourceDb.Dispose();
+
+
+            // Save and close the destination database
+            // destDb.SaveAs(destDwgPath, DwgVersion.Current);
+            // destDb.Dispose();
+
+        }
+
+        public void BLOCK_WITH_ATTRIBUTES(BlockTableRecord AcadBlockTableRecord, Transaction AcadTransaction, Database AcadDatabase, string sourceDwg, ref double insertptX, ref double insertptY, double scaleFactor, [Optional] double rotationAngle, [Optional] Point3d rotationPoint, int i = 0)
+        {
+
+            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            UriBuilder uri = new UriBuilder(codeBase);
+            string path = Uri.UnescapeDataString(uri.Path);
+
+            string workingDirectory = Path.GetDirectoryName(path);
+
+            // Get the project file path by searching for the .csproj file in the working directory
+            string sourceDwgPath = Directory.GetFiles(workingDirectory, sourceDwg + ".dwg").FirstOrDefault();
+
+            // Create a new Database object for the source DWG file
+            Database sourceDb = new Database(false, true);
+            sourceDb.ReadDwgFile(sourceDwgPath, FileOpenMode.OpenForReadAndWriteNoShare, true, "");
+
+
+            Transaction tr2 = sourceDb.TransactionManager.StartTransaction();
+
+            // Open the BlockTableRecord of the model space in the source database
+            BlockTableRecord sourceModelSpace = (BlockTableRecord)sourceDb.TransactionManager.GetObject(sourceDb.CurrentSpaceId, OpenMode.ForWrite);
+
+            // Create an ObjectIdCollection to hold the source object IDs
+            ObjectIdCollection sourceObjectIds = new ObjectIdCollection();
+
+            // Loop through the entities in the source model space
+            foreach (ObjectId sourceObjectId in sourceModelSpace)
+            {
+                // Add the source ObjectId to the collection
+                sourceObjectIds.Add(sourceObjectId);
+
+                // Modify the entity as needed
+                var sourceEntity = tr2.GetObject(sourceObjectId, OpenMode.ForWrite) as BlockReference;
+
+                var blockref = tr2.GetObject(sourceObjectId, OpenMode.ForWrite) as BlockReference;
+                ColorMethod colorMethod = ColorMethod.ByLayer;
+                int colorMethodCode = (int)colorMethod;
+                sourceEntity.ColorIndex = colorMethodCode;
+
+                try
+                {
+                    foreach (ObjectId attId in blockref.AttributeCollection)
+                    {
+                        AttributeReference attRef = tr2.GetObject(attId, OpenMode.ForRead) as AttributeReference;
+                        if (attRef != null && attRef.Tag.Equals("height", StringComparison.OrdinalIgnoreCase))
+                        {
+                            attRef.UpgradeOpen();
+                            attRef.TextString = ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z.ToString();
+                            attRef.DowngradeOpen();
+                        }
+                        else if (attRef != null && attRef.Tag.Equals("width", StringComparison.OrdinalIgnoreCase))
+                        {
+                            attRef.UpgradeOpen();
+                            attRef.TextString = ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z.ToString();
+                            attRef.DowngradeOpen();
+                        }
+                        else if (attRef != null && attRef.Tag.Equals("length", StringComparison.OrdinalIgnoreCase))
+                        {
+                            attRef.UpgradeOpen();
+                            attRef.TextString = ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z.ToString();
+                            attRef.DowngradeOpen();
+                        }
+                        else if (attRef != null && attRef.Tag.Equals("datum_ht", StringComparison.OrdinalIgnoreCase))
+                        {
+                            attRef.UpgradeOpen();
+                            attRef.TextString = ListCentalSuppoData[i].ListConcreteData[0].BoxData.Z.ToString();
+                            attRef.DowngradeOpen();
+                        }
+                    }
+
+
+
+                    //foreach (ObjectId attributeId in blockref.AttributeCollection)
+                    //{
+
+                    //    var entity = tr2.GetObject(attributeId, OpenMode.ForRead) as Entity;
+                    //    if (entity is AttributeDefinition)
+                    //    {
+                    //        var attributeDef = entity as AttributeDefinition;
+
+                    //        // Set the values for the attributes
+                    //        if (attributeDef.Tag == "ht")
+                    //        {
+                    //            var attributeValue = "10"; // Specify the value for the "ht" attribute
+                    //            blockref.SetAttributeFromBlock(attributeDef, attributeValue);
+
+                    //        }
+                    //        else if (attributeDef.Tag == "wd")
+                    //        {
+                    //            var attributeValue = "20"; // Specify the value for the "wd" attribute
+                    //            blockref.SetAttributeFromBlock(attributeDef, attributeValue);
+                    //        }
+                    //        else if (attributeDef.Tag == "lt")
+                    //        {
+                    //            var attributeValue = "30"; // Specify the value for the "lt" attribute
+                    //            blockref.SetAttributeFromBlock(attributeDef, attributeValue);
+                    //        }
+                    //        else if (attributeDef.Tag == "dh")
+                    //        {
+                    //            var attributeValue = "40"; // Specify the value for the "dh" attribute
+                    //            blockref.SetAttributeFromBlock(attributeDef, attributeValue);
+                    //        }
+                    //    }
+                    //}
+
+
+
+
+                }
+                catch (Exception)
+                {
+
+                }
+
+
+
+
+                Point3d strpt = new Point3d(0, 0, 0);
+                Vector3d destvect = strpt.GetVectorTo(new Point3d(insertptX, insertptY, 0));
 
                 Matrix3d scaleMatrix = Matrix3d.Scaling(scaleFactor, new Point3d(0, 0, 0));
 
@@ -8584,7 +12374,7 @@ namespace Project1.Support2D
 
             BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - 1500, spaceY - boxht + 700 + 1100, 0), new Point3d(centerX + 1500, spaceY - boxht + 700 + 1100, 0), new Point3d(centerX + 1500, spaceY - boxht + 700, 0), new Point3d(centerX - 1500, spaceY - boxht + 700, 0), SecThick.Nothing, Centerline: "na");
 
-            // CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - 1500 + 1000, spaceY - boxht + 700 + 1100 - 100, 0), ListCentalSuppoData[i].Name, 350, MyCol.Red);
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - 1500 + 1000, spaceY - boxht + 700 + 1100 - 100, 0), ListCentalSuppoData[i].Name, 350, MyCol.Red);
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - 1500 + 1000, spaceY - boxht + 700 + 1100 - 100, 0), supportype, 350, MyCol.Red);
 
             //support quant
@@ -23749,20 +27539,21 @@ namespace Project1.Support2D
             pointsinfo[Defination.SecTopLB] = new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0);
 
             double l_dist_frm_centre = 0;
-            double r_dist_frm_centre = 0;
+            //double r_dist_frm_centre = 0;
             //dimensioning
             try
             {
-                var strpt = secsupp_des.ElementAt(0).StPt;
-                var endpt = secsupp_des.ElementAt(0).EndPt;
+                l_dist_frm_centre = Math.Round(secsupp_des.ElementAt(0).BoxData.X);
+                //var strpt = secsupp_des.ElementAt(0).StPt;
+                //var endpt = secsupp_des.ElementAt(0).EndPt;
 
-                // var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
-                var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Centroid;
+                //// var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
+                //var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Centroid;
 
-                Point3d projectedpt = FindPerpendicularFoot(midpt, strpt, endpt);
+                //Point3d projectedpt = FindPerpendicularFoot(midpt, strpt, endpt);
 
-                l_dist_frm_centre = Math.Round(GetDist(new Point3d(strpt), projectedpt));
-                r_dist_frm_centre = Math.Round(GetDist(new Point3d(endpt), projectedpt));
+                //l_dist_frm_centre = Math.Round(GetDist(new Point3d(strpt), projectedpt));
+                //r_dist_frm_centre = Math.Round(GetDist(new Point3d(endpt), projectedpt));
             }
             catch (Exception)
             {
@@ -23772,8 +27563,8 @@ namespace Project1.Support2D
 
             //double strtmiddist=GetDist(ldist)
 
-            CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), l_dist_frm_centre.ToString());
-            CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), r_dist_frm_centre.ToString());
+            CreateDimension(pointsinfo[Defination.SecTopLT], pointsinfo[Defination.SecTopRT], l_dist_frm_centre.ToString(), 500);
+            //CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), r_dist_frm_centre.ToString());
 
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
@@ -23854,7 +27645,7 @@ namespace Project1.Support2D
 
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "50");
 
 
             tracex += boxlen;
@@ -23960,20 +27751,21 @@ namespace Project1.Support2D
             pointsinfo[Defination.SecTopLB] = new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0);
 
             double l_dist_frm_centre = 0;
-            double r_dist_frm_centre = 0;
+            //double r_dist_frm_centre = 0;
             //dimensioning
             try
             {
-                var strpt = secsupp_des.ElementAt(0).StPt;
-                var endpt = secsupp_des.ElementAt(0).EndPt;
+                l_dist_frm_centre = Math.Round(secsupp_des.ElementAt(0).BoxData.X);
+                //var strpt = secsupp_des.ElementAt(0).StPt;
+                //var endpt = secsupp_des.ElementAt(0).EndPt;
 
-                // var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
-                var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Centroid;
+                //// var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
+                //var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Centroid;
 
-                Point3d projectedpt = FindPerpendicularFoot(midpt, strpt, endpt);
+                //Point3d projectedpt = FindPerpendicularFoot(midpt, strpt, endpt);
 
-                l_dist_frm_centre = Math.Round(GetDist(new Point3d(strpt), projectedpt));
-                r_dist_frm_centre = Math.Round(GetDist(new Point3d(endpt), projectedpt));
+                //l_dist_frm_centre = Math.Round(GetDist(new Point3d(strpt), projectedpt));
+                //r_dist_frm_centre = Math.Round(GetDist(new Point3d(endpt), projectedpt));
             }
             catch (Exception)
             {
@@ -23983,8 +27775,9 @@ namespace Project1.Support2D
 
             //double strtmiddist=GetDist(ldist)
 
-            CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), l_dist_frm_centre.ToString());
-            CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), r_dist_frm_centre.ToString());
+            CreateDimension(pointsinfo[Defination.SecTopLT], pointsinfo[Defination.SecTopRT], l_dist_frm_centre.ToString(), 500);
+            // CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), l_dist_frm_centre.ToString());
+            // CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), r_dist_frm_centre.ToString());
 
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
@@ -24065,7 +27858,7 @@ namespace Project1.Support2D
 
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "51");
 
 
             tracex += boxlen;
@@ -24330,7 +28123,7 @@ namespace Project1.Support2D
             ////DrawLeader(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Structure/Block", new Point3d(pointsextrainfo["RefLT"].X, (pointsextrainfo["RefLT"].Y + pointsextrainfo["RefLB"].Y) / 2, 0), new Point3d(pointsextrainfo["RefLT"].X - 1000, (pointsextrainfo["RefLT"].Y + pointsextrainfo["RefLB"].Y) / 2, 0));
 
             ////////////////support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "52");
 
 
             tracex += boxlen;
@@ -24490,6 +28283,7 @@ namespace Project1.Support2D
             }
             TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, pointsinfo[Defination.SecTopRT].X, pointsinfo[Defination.SecTopRT].Y, TotalHt);
             //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
+            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
             ///////////left plate for top sec
             height = 1500;
@@ -24504,9 +28298,9 @@ namespace Project1.Support2D
 
             }
 
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), SecThick.HBoth, "pl", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), SecThick.Nothing, "pl", 0, sectionsize);
 
-            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
             /////////////////slant sec support
             height = 1000;
             length = 3000;
@@ -24583,7 +28377,7 @@ namespace Project1.Support2D
 
             }
 
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), SecThick.HBoth, "pl", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), SecThick.Nothing, "pl", 500, sectionsize);
 
 
             ///////////////////ref block
@@ -24596,7 +28390,7 @@ namespace Project1.Support2D
             //DrawLeader(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Structure/Block", new Point3d(pointsextrainfo["RefLT"].X, (pointsextrainfo["RefLT"].Y + pointsextrainfo["RefLB"].Y) / 2, 0), new Point3d(pointsextrainfo["RefLT"].X - 1000, (pointsextrainfo["RefLT"].Y + pointsextrainfo["RefLB"].Y) / 2, 0));
 
             ////////////////support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "53");
 
 
             tracex += boxlen;
@@ -24807,7 +28601,7 @@ namespace Project1.Support2D
 
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "54");
 
 
             tracex += boxlen;
@@ -25229,7 +29023,7 @@ namespace Project1.Support2D
 
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "56");
 
 
             tracex += boxlen;
@@ -25440,7 +29234,7 @@ namespace Project1.Support2D
 
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "57");
 
 
             tracex += boxlen;
@@ -25517,7 +29311,7 @@ namespace Project1.Support2D
             //}
 
 
-            //topsec
+            ///////////////////topsec
             double height = 1000;
             double length = 4000;
             info[Defination.Sec_top_l] = length;
@@ -25605,7 +29399,7 @@ namespace Project1.Support2D
 
             }
 
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), SecThick.HBoth, "pl", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), SecThick.Nothing, "pl", 0, sectionsize);
 
 
             //////////////////bot sec
@@ -25747,7 +29541,7 @@ namespace Project1.Support2D
 
             //topsec
             double height = 1000;
-            double length = 4000;
+            double length = 2000;
             info[Defination.Sec_top_l] = length;
             info[Defination.Sec_top_b] = height;
 
@@ -25879,7 +29673,7 @@ namespace Project1.Support2D
 
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "59");
 
 
             tracex += boxlen;
@@ -26039,6 +29833,8 @@ namespace Project1.Support2D
             }
             TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, pointsinfo[Defination.SecTopRT].X, pointsinfo[Defination.SecTopRT].Y, TotalHt);
             //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
+            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
 
             ///////////left plate for top sec
             height = 1500;
@@ -26053,9 +29849,9 @@ namespace Project1.Support2D
 
             }
 
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), SecThick.HBoth, "pl", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecTopLT].X - length, (pointsinfo[Defination.SecTopLT].Y + pointsinfo[Defination.SecTopLB].Y) / 2 - height / 2, 0), SecThick.Nothing, "pl", 0, sectionsize);
 
-            info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
+
             /////////////////slant sec support
             height = 1000;
             length = 3000;
@@ -26132,7 +29928,7 @@ namespace Project1.Support2D
 
             }
 
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), SecThick.HBoth, "pl", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 + height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), new Point3d(pointsinfo[Defination.SecBotLT].X - length, (pointsinfo[Defination.SecBotLT].Y + pointsinfo[Defination.SecBotLB].Y) / 2 - height / 2, 0), SecThick.Nothing, "pl", 0, sectionsize);
 
 
             ///////////////////ref block
@@ -26145,7 +29941,7 @@ namespace Project1.Support2D
             //DrawLeader(AcadBlockTableRecord, AcadTransaction, AcadDatabase, "Structure/Block", new Point3d(pointsextrainfo["RefLT"].X, (pointsextrainfo["RefLT"].Y + pointsextrainfo["RefLB"].Y) / 2, 0), new Point3d(pointsextrainfo["RefLT"].X - 1000, (pointsextrainfo["RefLT"].Y + pointsextrainfo["RefLB"].Y) / 2, 0));
 
             ////////////////support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "61");
 
 
             tracex += boxlen;
@@ -26251,7 +30047,7 @@ namespace Project1.Support2D
 
             }
 
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht] - height - 1000, 0), SecThick.HBoth, "R", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Prim_ht] - height, 0), SecThick.HBoth, "R", 0, sectionsize);
 
             //info for future
             pointsinfo[Defination.SecTopLT] = new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0);
@@ -26304,7 +30100,7 @@ namespace Project1.Support2D
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
 
             info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
-            //slant sec sup
+            //////////////////slant sec sup
             height = 1000;
             length = 3000;
             info[Defination.Sec_bot_l] = length;
@@ -26317,7 +30113,7 @@ namespace Project1.Support2D
             {
 
             }
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing, "L", sectionsize: sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing, "L", sectionsize: sectionsize, Centerline: "na");
 
             //info for future
             pointsinfo[Defination.SecBotLT] = new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0);
@@ -26367,11 +30163,11 @@ namespace Project1.Support2D
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
 
 
-
+            /////////////////////bot sec
             //bot secondary support
             height = 4000;
             length = 1000;
-            info[Defination.Sec_ht_bot] = height + 500;
+            info[Defination.Sec_ht_bot] = height + 1500;
             try
             {
                 sectionsize = Convert.ToDouble(CSECTIONSIZE(secsupp_des.ElementAt(2).Size));
@@ -26401,7 +30197,7 @@ namespace Project1.Support2D
 
             CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, pointsinfo[Defination.SecBotLT], pointsinfo[Defination.SecBotLB], botsec, 3000);
 
-            //concret supp
+            /////////////concret supp
             height = 1000;
             length = 3000;
             info[Defination.Concrete_l] = length;
@@ -26558,7 +30354,7 @@ namespace Project1.Support2D
             CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0));
             // CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            //LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
             string TotalHt = "";
             //mtext
@@ -26569,14 +30365,14 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], TotalHt, "l");
 
-
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
 
             info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
 
-            //bot sec
+            /////////////////////bot sec
             height = 6000;
             length = 1000;
             info[Defination.Sec_bot_l] = length;
@@ -26613,9 +30409,9 @@ namespace Project1.Support2D
             CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b], 0), botsec);
 
 
-            //lower sec top supp
+            //////////////////lower sec top supp
             height = 1000;
-            length = 4000;
+            length = 2500;
             extrainfo["Sec_low_b"] = height;
             extrainfo["Sec_low_l"] = length;
             extrainfo["Sec_low_l"] = length + 500;
@@ -26646,7 +30442,8 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, pointsextrainfo["Sec_low_LT"].X, pointsextrainfo["Sec_low_LT"].Y, TotalHt, "l");
+            // CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
 
 
             //string lower_prim_height = "";
@@ -26920,7 +30717,7 @@ namespace Project1.Support2D
             CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0));
             // CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            //LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
             string TotalHt = "";
             //mtext
@@ -26931,14 +30728,14 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], TotalHt, "l");
 
-
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
 
             info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
 
-            //bot sec
+            /////////////////////bot sec
             height = 6000;
             length = 1000;
             info[Defination.Sec_bot_l] = length;
@@ -26975,9 +30772,9 @@ namespace Project1.Support2D
             CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b], 0), botsec);
 
 
-            //lower sec top supp
+            //////////////////lower sec top supp
             height = 1000;
-            length = 4000;
+            length = 2500;
             extrainfo["Sec_low_b"] = height;
             extrainfo["Sec_low_l"] = length;
             extrainfo["Sec_low_l"] = length + 500;
@@ -27008,7 +30805,8 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, pointsextrainfo["Sec_low_LT"].X, pointsextrainfo["Sec_low_LT"].Y, TotalHt, "l");
+            // CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
 
 
             //string lower_prim_height = "";
@@ -27282,7 +31080,7 @@ namespace Project1.Support2D
             CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0));
             // CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            //LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
             string TotalHt = "";
             //mtext
@@ -27293,14 +31091,14 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], TotalHt, "l");
 
-
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
+            // CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
 
             info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
 
-            //bot sec
+            ////////////////////bot sec
             height = 6000;
             length = 1000;
             info[Defination.Sec_bot_l] = length;
@@ -27337,9 +31135,9 @@ namespace Project1.Support2D
             CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 + info[Defination.Sec_bot_l], centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b], 0), botsec);
 
 
-            //lower sec top supp
+            /////////////////lower sec top supp
             height = 1000;
-            length = 4000;
+            length = 2500;
             extrainfo["Sec_low_b"] = height;
             extrainfo["Sec_low_l"] = length;
             extrainfo["Sec_low_l"] = length + 500;
@@ -27370,7 +31168,8 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, pointsextrainfo["Sec_low_LT"].X, pointsextrainfo["Sec_low_LT"].Y, "l");
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
 
 
             //string lower_prim_height = "";
@@ -27481,7 +31280,7 @@ namespace Project1.Support2D
             ////////////////////middle sec top supp
             //////same name bcoz copy paste of low sec top supp
             height = 1000;
-            length = 4000;
+            length = 2500;
             extrainfo["Sec_low_b"] = height;
             extrainfo["Sec_low_l"] = length;
             extrainfo["Sec_low_l"] = length + 500;
@@ -27512,7 +31311,8 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 2500 + 300, 0), "TOS EL.(+)" + TotalHt);
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, pointsextrainfo["Sec_low_LT"].X, pointsextrainfo["Sec_low_LT"].Y, TotalHt, "l");
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 2500 + 300, 0), "TOS EL.(+)" + TotalHt);
 
 
             //dimensioning
@@ -27569,7 +31369,6 @@ namespace Project1.Support2D
             CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "65");
 
             tracex += boxlen;
-
 
         }
 
@@ -28000,7 +31799,7 @@ namespace Project1.Support2D
             //LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "64");
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "66");
 
             tracex += boxlen;
 
@@ -28014,6 +31813,7 @@ namespace Project1.Support2D
 
             double centerX = tracex + boxlen / 2;  // 9869.9480;
             double centerY = spaceY - upperYgap;
+            centerX -= 1500;
             //box boundaries
             //vertical line
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(tracex + boxlen, spaceY + 619.1209, 0), new Point3d(tracex + boxlen, spaceY - boxht + 619.1209, 0), MyCol.LightBlue);
@@ -28145,7 +31945,7 @@ namespace Project1.Support2D
             CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0));
             // CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            // LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
             string TotalHt = "";
             //mtext
@@ -28156,9 +31956,9 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], TotalHt, "l");
 
-
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
+            // CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
 
             info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
@@ -28202,7 +32002,7 @@ namespace Project1.Support2D
 
             /////////////////lower sec top supp
             height = 1000;
-            length = 4000;
+            length = 2500;
             extrainfo["Sec_low_b"] = height;
             extrainfo["Sec_low_l"] = length;
             extrainfo["Sec_low_l"] = length + 500;
@@ -28233,7 +32033,8 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, pointsextrainfo["Sec_low_LT"].X, pointsextrainfo["Sec_low_LT"].Y, TotalHt, "l");
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + info[Defination.Sec_top_l] * 0.34 - extrainfo["Sec_low_l"] - 3500, centerY - info[Defination.Prim_ht] - info[Defination.Sec_bot_b] + extrainfo["Sec_low_b"] + 500 + 300, 0), "TOS EL.(+)" + TotalHt);
 
 
             //string lower_prim_height = "";
@@ -28359,7 +32160,7 @@ namespace Project1.Support2D
             }
 
             //upper top secondary
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1000 + 5000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 5000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 5000, centerY - info[Defination.Prim_ht] - height - 3000, 0), new Point3d(centerX - length * 0.66 + 1000 + 5000, centerY - info[Defination.Prim_ht] - height - 3000, 0), SecThick.HHidBoth, "L", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1000 + 4000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht] - height - 3000, 0), new Point3d(centerX - length * 0.66 + 1000 + 4000, centerY - info[Defination.Prim_ht] - height - 3000, 0), SecThick.HHidBoth, "R", 0, sectionsize);
 
 
             l_dist_frm_centre = 0;
@@ -28394,10 +32195,10 @@ namespace Project1.Support2D
 
 
             //dimensioning
-            CreateDimension(new Point3d(centerX - length * 0.66 + 1000 + 5000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 5000, centerY - info[Defination.Prim_ht] - 3000, 0));
+            CreateDimension(new Point3d(centerX - length * 0.66 + 1000 + 4000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht] - 3000, 0));
             // CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34 + 5000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 4000 + 5000, centerY - info[Defination.Prim_ht] - 3000, 0), MyCol.LightBlue);
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht] - 3000, 0), new Point3d(centerX + length * 0.34 + 4000 + 5000, centerY - info[Defination.Prim_ht] - 3000, 0), MyCol.LightBlue);
 
             TotalHt = "";
             //mtext
@@ -28410,7 +32211,7 @@ namespace Project1.Support2D
             }
 
 
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500 + 5000, centerY - info[Defination.Prim_ht] - 3000 + 300, 0), "TOS EL.(+)" + TotalHt);
+            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500 + 4000, centerY - info[Defination.Prim_ht] - 3000 + 300, 0), "TOS EL.(+)" + TotalHt);
 
             ////////////////////////concrete sup
             height = 1000;
@@ -28434,7 +32235,7 @@ namespace Project1.Support2D
             //LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "64");
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "67");
 
             tracex += boxlen;
 
@@ -28538,20 +32339,22 @@ namespace Project1.Support2D
             pointsinfo[Defination.SecTopLB] = new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht] - height, 0);
 
             double l_dist_frm_centre = 0;
-            double r_dist_frm_centre = 0;
+            // double r_dist_frm_centre = 0;
             //dimensioning
             try
             {
-                var strpt = secsupp_des.ElementAt(0).StPt;
-                var endpt = secsupp_des.ElementAt(0).EndPt;
 
-                // var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
-                var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Centroid;
+                l_dist_frm_centre = secsupp_des.ElementAt(0).BoxData.X;
+                //var strpt = secsupp_des.ElementAt(0).StPt;
+                //var endpt = secsupp_des.ElementAt(0).EndPt;
 
-                Point3d projectedpt = FindPerpendicularFoot(midpt, strpt, endpt);
+                //// var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Midpoint;
+                //var midpt = ListCentalSuppoData[i].ListPrimarySuppo[0].Centroid;
 
-                l_dist_frm_centre = Math.Round(GetDist(new Point3d(strpt), projectedpt));
-                r_dist_frm_centre = Math.Round(GetDist(new Point3d(endpt), projectedpt));
+                //Point3d projectedpt = FindPerpendicularFoot(midpt, strpt, endpt);
+
+                //l_dist_frm_centre = Math.Round(GetDist(new Point3d(strpt), projectedpt));
+                //r_dist_frm_centre = Math.Round(GetDist(new Point3d(endpt), projectedpt));
             }
             catch (Exception)
             {
@@ -28561,8 +32364,9 @@ namespace Project1.Support2D
 
             //double strtmiddist=GetDist(ldist)
 
-            CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), l_dist_frm_centre.ToString());
-            CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), r_dist_frm_centre.ToString());
+            CreateDimension(pointsinfo[Defination.SecTopLT], pointsinfo[Defination.SecTopRT], l_dist_frm_centre.ToString());
+            // CreateDimension(new Point3d(centerX - length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), l_dist_frm_centre.ToString());
+            // CreateDimension(new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX, centerY + info[Defination.Prim_Radius], 0), r_dist_frm_centre.ToString());
 
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length / 2, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length / 2 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
@@ -28643,7 +32447,7 @@ namespace Project1.Support2D
 
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, SupType);
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "68");
 
 
             tracex += boxlen;
@@ -28788,7 +32592,7 @@ namespace Project1.Support2D
             CreateDimension(new Point3d(centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0));
             // CreateDimension(new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX - 500, centerY + info[Defination.Prim_Radius], 0));
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
+            // LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 4000, centerY - info[Defination.Prim_ht], 0), MyCol.LightBlue);
 
             string TotalHt = "";
             //mtext
@@ -28799,9 +32603,9 @@ namespace Project1.Support2D
             catch (Exception)
             {
             }
+            TOSLOC(AcadBlockTableRecord, AcadTransaction, AcadDatabase, centerX - length * 0.66 + 1000, centerY - info[Defination.Prim_ht], TotalHt, "l");
 
-
-            CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
+            //CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 3500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
 
             info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
 
@@ -29024,7 +32828,7 @@ namespace Project1.Support2D
             //LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
 
             //support name and quantity
-            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "63");
+            CreateSupportName(AcadBlockTableRecord, AcadTransaction, AcadDatabase, ref tracex, boxlen, boxht, ref spaceY, i, "69");
 
             tracex += boxlen;
 
@@ -29114,7 +32918,7 @@ namespace Project1.Support2D
             //double ht_frm_cen = 1220.7383;
 
             ////////////////////////////topsec
-            ////////added 2000 to right end for making long top sec
+            ////////subtracted 3000 to left end for making long top sec
             double height = 1000;
             double length = 3000;
             info[Defination.Sec_top_l] = length;
@@ -29130,7 +32934,7 @@ namespace Project1.Support2D
 
             }
 
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 2000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34 + 2000, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht] - height - 1000, 0), SecThick.HBoth, "R", 0, sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 - 1000 - 3000, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht], 0), new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 - 3000, centerY - info[Defination.Prim_ht] - height - 1000, 0), SecThick.HBoth, "R", 0, sectionsize);
 
             //info for future
             pointsinfo[Defination.SecTopLT] = new Point3d(centerX - length * 0.66, centerY - info[Defination.Prim_ht], 0);
@@ -29183,7 +32987,7 @@ namespace Project1.Support2D
             CreateMtextfunc(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX + 2500, centerY - info[Defination.Prim_ht] + 300, 0), "TOS EL.(+)" + TotalHt);
 
             info[Defination.Sec_ht_top] = info[Defination.Prim_ht] + height;
-            //////////////////////slant sec sup left
+            //////////////////////slant sec sup right
             height = 1000;
             length = 3000;
             info[Defination.Sec_bot_l] = length;
@@ -29196,7 +33000,7 @@ namespace Project1.Support2D
             {
 
             }
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing, "L", sectionsize: sectionsize);
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing, "r", sectionsize: sectionsize, Centerline: "na");
 
             //info for future
             pointsinfo[Defination.SecBotLT] = new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0);
@@ -29245,8 +33049,8 @@ namespace Project1.Support2D
 
             LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
 
-            //////////////////////slant sec sup right
-            ///////////////added 1000 to right bottom
+            //////////////////////slant sec sup left
+            //subtracted 1000 to left from bottom end and subtracted 6475.4928 and 4475.4928 from upper end to draw mirror of slant support
             height = 1000;
             length = 3000;
             info[Defination.Sec_bot_l] = length;
@@ -29259,17 +33063,18 @@ namespace Project1.Support2D
             {
 
             }
-            /////for this case box doesnt start from left top
-            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000+1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing, "L", sectionsize: sectionsize);
+            /////Note:-for this case box doesnt start from left top
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Sec_ht_top] - 1000, 0), new Point3d(centerX - length * 0.66 + 1737.7464 - 4475.4928, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 6475.4928, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), SecThick.Nothing, "L", sectionsize: sectionsize, Centerline: "na");
+
 
             //info for future
-            pointsinfo[Defination.SecBotLT] = new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000, 0);
-            pointsinfo[Defination.SecBotRT] = new Point3d(centerX - length * 0.66 + 1737.7464, centerY - info[Defination.Sec_ht_top], 0);
-            pointsinfo[Defination.SecBotRB] = new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0);
-            pointsinfo[Defination.SecBotLB] = new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0);
+            pointsinfo[Defination.SecBotLT] = new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Sec_ht_top] - 1000, 0);
+            pointsinfo[Defination.SecBotRT] = new Point3d(centerX - length * 0.66 + 1737.7464 - 4475.4928, centerY - info[Defination.Sec_ht_top], 0);
+            pointsinfo[Defination.SecBotRB] = new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 6475.4928, centerY - info[Defination.Sec_ht_top], 0);
+            pointsinfo[Defination.SecBotLB] = new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0);
 
             //dimensioning
-             botsec = "";
+            botsec = "";
             try
             {
                 botsec = secsupp_des.ElementAt(1).BoxData.Z.ToString();
@@ -29279,12 +33084,10 @@ namespace Project1.Support2D
 
             }
 
-
-
-            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660, 0), botsec, -1000);
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, pointsinfo[Defination.SecBotRB], pointsinfo[Defination.SecBotLB], botsec, -1000);
 
             //hori small dimen
-             botsec2 = "";
+            botsec2 = "";
             try
             {
                 // botsec2 = ListCentalSuppoData[i].ListSecondrySuppo.Where(e => e.BoxData.Z == ListCentalSuppoData[i].ListSecondrySuppo.Max(s => s.BoxData.Z)).First().BoxData.Z.ToString();
@@ -29302,18 +33105,18 @@ namespace Project1.Support2D
             }
 
 
-            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX + length * 0.34, centerY - info[Defination.Prim_ht] - height, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 1000, centerY - info[Defination.Sec_ht_top], 0), botsec2, -700);
+            CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, new Point3d(centerX - length * 0.66 - 1000 - 3000, centerY - info[Defination.Prim_ht], 0), pointsinfo[Defination.SecBotRB], botsec2, -700);
 
             //inside lines
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Sec_ht_top] - 1000 - 115, 0), new Point3d(centerX - length * 0.66 + 1737.7464 + 200 - 4875.4928, centerY - info[Defination.Sec_ht_top], 0), MyCol.Yellow, "Dashed");
 
-            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
+            LineDraw(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(centerX - length * 0.66 + 1737.7464 + 1000 - 200 - 6075.4928, centerY - info[Defination.Sec_ht_top], 0), new Point3d(centerX - length * 0.66 - 1000, centerY - info[Defination.Sec_ht_top] - 1000 - 571.1660 + 115, 0), MyCol.Yellow, "Dashed");
 
 
             /////////////////////////bot secondary support
             height = 4000;
             length = 1000;
-            info[Defination.Sec_ht_bot] = height + 500;
+            info[Defination.Sec_ht_bot] = height + 500 + 1000;
             try
             {
                 sectionsize = Convert.ToDouble(CSECTIONSIZE(secsupp_des.ElementAt(2).Size));
@@ -29339,11 +33142,17 @@ namespace Project1.Support2D
             {
 
             }
-
-
             CreateAlighDimen(AcadBlockTableRecord, AcadTransaction, pointsinfo[Defination.SecBotLT], pointsinfo[Defination.SecBotLB], botsec, 3000);
 
-            //concret supp
+            //////////////gusset plates
+            double gusht = 500;
+            double guslt = 100;
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecBotLB].X - guslt, pointsinfo[Defination.SecBotLB].Y + gusht, 0), new Point3d(pointsinfo[Defination.SecBotLB].X, pointsinfo[Defination.SecBotLB].Y + gusht, 0), new Point3d(pointsinfo[Defination.SecBotLB].X, pointsinfo[Defination.SecBotLB].Y, 0), new Point3d(pointsinfo[Defination.SecBotLB].X - guslt, pointsinfo[Defination.SecBotLB].Y, 0), SecThick.Nothing, "gpl");
+
+            BoxGenCreateSecondarySupportBottom(AcadBlockTableRecord, AcadTransaction, AcadDatabase, new Point3d(pointsinfo[Defination.SecBotRB].X, pointsinfo[Defination.SecBotRB].Y + gusht, 0), new Point3d(pointsinfo[Defination.SecBotRB].X + guslt, pointsinfo[Defination.SecBotRB].Y + gusht, 0), new Point3d(pointsinfo[Defination.SecBotRB].X + guslt, pointsinfo[Defination.SecBotRB].Y, 0), new Point3d(pointsinfo[Defination.SecBotRB].X, pointsinfo[Defination.SecBotRB].Y, 0), SecThick.Nothing, "gpr");
+
+
+            //////////////concret supp
             height = 1000;
             length = 3000;
             info[Defination.Concrete_l] = length;
@@ -29361,7 +33170,6 @@ namespace Project1.Support2D
             tracex += boxlen;
 
         }
-
 
 
 
